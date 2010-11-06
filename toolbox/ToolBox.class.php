@@ -9,10 +9,6 @@ class ToolBox {
 	
 	private $modules = array();
 	
-	private function __construct(){
-	
-	}
-	
 	
 	
 	public static function get(){
@@ -28,19 +24,19 @@ class ToolBox {
 	
 	//--|SETTER----------
 	
-	private function setModule($moduleName){
-		$className = 'ToolBox'.$moduleName;
-		$this->modules[$moduleName] = new $className;
+	private function setModule($moduleName, $constructorArgs){
+		$className = 'ToolBoxModule'.$moduleName;
+		$this->modules[$moduleName] = new $className($constructorArgs);
 	}
 	
 	
 	
 	//--|GETTER----------
 	
-	public function getModule($moduleName){
+	public function getModule($moduleName, $constructorArgs){
 		if( !$this->moduleLoaded($moduleName) ){
-			require_once "$moduleName/ToolBox.$moduleName.class.php";
-			$this->setModule($moduleName);
+			require_once "ToolBoxModule.$moduleName.class.php";
+			$this->setModule($moduleName, $constructorArgs);
 		}
 		
 		return $this->modules[$moduleName];
@@ -56,10 +52,10 @@ class ToolBox {
 	
 	
 	
-	//--|MODULE-LOADERS----------
+	//--|MODULE-LOADER----------
 	
-	public static function download(){
-		return self::get()->getModule(__FUNCTION__);
+	public static function __callStatic($name, $arguments){
+		return self::get()->getModule($name, $arguments);
 	}
 	
 }
