@@ -1,5 +1,7 @@
 ﻿<?php
 
+//--|INCLUDES----------
+
 require_once 'toolbox/ToolBox.class.php';
 
 ?>
@@ -12,6 +14,9 @@ require_once 'toolbox/ToolBox.class.php';
 	</head>
 	<body>
 		<h1>ToolBox Testcases</h1>
-		<?=ToolBox::download()->requestFile('test')?>
+		<pre><?=ToolBox::download()->requestFile('test')?></pre>
+		<pre><?=htmlspecialchars(ToolBox::javascript()->printGoogleAnalyticsCode('UA-XXXXX-X'))?></pre>
+		<pre><?=htmlspecialchars(ToolBox::javascript()->printGoogleAnalyticsCode('UA-XXXXX-X', true))?></pre>
+		<pre><?=htmlspecialchars(ToolBox::javascript()->printGoogleAnalyticsPageView('UA-XXXXX-X', '/home/etc'))?></pre>
 	</body>
 </html>
