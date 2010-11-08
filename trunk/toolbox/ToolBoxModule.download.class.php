@@ -2,7 +2,7 @@
 
 //--|INCLUDES----------
 
-require_once 'ToolBoxModule.absclass.php';
+require_once 'toolboxmodule.absclass.php';
 
 
 
@@ -11,8 +11,8 @@ require_once 'ToolBoxModule.absclass.php';
 class ToolBoxModuleDownload extends ToolBoxModule {
 	
 	// ***
-	public function __construct($args){
-		parent::__construct($args);
+	public function __construct($moduleName, $addedArgs){
+		parent::__construct($moduleName, $addedArgs);
 	}
 	// ***
 	
@@ -20,9 +20,14 @@ class ToolBoxModuleDownload extends ToolBoxModule {
 	
 	public function requestFile($file){
 		if( file_exists($file) ){
-			return true;
+			$pathInfo = pathinfo($file);
+			
+			header('Content-type: application/'.$pathInfo['extension']);
+			header('Content-Disposition: attachment; filename="'.$pathInfo['basename'].'"');
+			
+			readfile($file);
 		} else {
-			return false;
+			$this->throwModuleException(__FUNCTION__.': io-error, file not found');
 		}
 	}
 

@@ -2,7 +2,7 @@
 
 //--|INCLUDES----------
 
-require_once 'ToolBoxModule.absclass.php';
+require_once 'toolboxmodule.absclass.php';
 
 
 
@@ -11,8 +11,8 @@ require_once 'ToolBoxModule.absclass.php';
 class ToolBoxModuleJavascript extends ToolBoxModule {
 
 	// ***
-	public function __construct($args){
-		parent::__construct($args);
+	public function __construct($moduleName, $addedArgs){
+		parent::__construct($moduleName, $addedArgs);
 	}
 	// ***
 	
