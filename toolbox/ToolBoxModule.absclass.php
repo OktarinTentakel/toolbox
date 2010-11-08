@@ -5,10 +5,20 @@
 abstract class ToolBoxModule {
 
 	// ***
-	public function __construct($args){
+	protected $moduleName;
 	
+	public function __construct($moduleName, $addedArgs){
+		$this->moduleName = $moduleName;
 	}
 	// ***
+	
+	
+	
+	//--|FUNCTIONALITY----------
+	
+	protected function throwModuleException($msg){
+		throw new Exception('ToolBoxException | for module "'.$this->moduleName.'" > '.$msg);
+	}
 
 }
 

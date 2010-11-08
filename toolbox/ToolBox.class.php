@@ -26,7 +26,7 @@ class ToolBox {
 	
 	private function setModule($moduleName, $constructorArgs){
 		$className = 'ToolBoxModule'.$moduleName;
-		$this->modules[$moduleName] = new $className($constructorArgs);
+		$this->modules[$moduleName] = new $className($moduleName, $constructorArgs);
 	}
 	
 	
@@ -35,7 +35,7 @@ class ToolBox {
 	
 	public function getModule($moduleName, $constructorArgs){
 		if( !$this->moduleLoaded($moduleName) ){
-			require_once "ToolBoxModule.$moduleName.class.php";
+			require_once "toolboxmodule.$moduleName.class.php";
 			$this->setModule($moduleName, $constructorArgs);
 		}
 		
