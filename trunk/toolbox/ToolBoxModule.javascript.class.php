@@ -17,7 +17,9 @@ class ToolBoxModuleJavascript extends ToolBoxModule {
 	// ***
 	
 	
-
+	
+	//--|GOOGLE-ANALYTICS----------
+	
 	public function printGoogleAnalyticsCode($gaId = 'UA-XXXXX-X', $withoutAutoTracking = false){
 		$res =
 			 '<script type="text/javascript">'

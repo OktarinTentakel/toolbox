@@ -9,6 +9,9 @@ if( isset($_GET['download-requestfile']) ){
 	exit();
 }
 
+ToolBox::authentification()->registerSingleton();
+ToolBox::get()->Authentificator->init();
+
 ?>
 
 <!doctype html>
