@@ -3,13 +3,7 @@
 
 class ToolBoxModuleSingleton {
 	
-	protected static $instance = null;
-	
-	
-	
-	protected function __construct(Array $args = null){
-		
-	}
+	protected function __construct(Array $args = null){}
 	
 	
 	

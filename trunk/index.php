@@ -5,6 +5,7 @@
 require_once 'toolbox/ToolBox.class.php';
 
 ToolBox::authentification()->registerSingleton(ToolBoxModuleAuthentification::SINGLETON_AUTHENTIFICATOR);
+ToolBox::routing()->registerSingleton(ToolBoxModuleRouting::SINGLETON_ROUTER);
 
 if( isset($_GET['download-requestfile']) ){
 	ToolBox::download()->requestFile($_GET['download-requestfile']);
@@ -19,17 +20,14 @@ if( isset($_GET['authentification-Authentificator-logout']) ){
 	ToolBox::get()->Authentificator->logout();
 }
 
-// ++++++++++++++
-
-
-ToolBox::routing()->registerSingleton(ToolBoxModuleRouting::SINGLETON_ROUTER);
-
-ToolBox::get()->Router->addShortRule('objecttest/(.+)/(.+)', 'Test:[php/test.class.php]/objectMethod/a:integer/b/');
-ToolBox::get()->Router->addShortRule('statictest/(.+)/(.+)', 'Test:[php/test.class.php]/staticFunction/a/b:integer/[rs]');
-ToolBox::get()->Router->addShortRule('globaltest/(.+)/(.+)', ':[php/test.class.php]/globalFunction/a/b/c:integer/[r]');
-
-
-// ++++++++++++++
+require_once 'php/test.class.php';
+ToolBox::get()->Router->addShortRule('', 'Test:[php/test.class.php]/indexFunction/[rs]');
+ToolBox::get()->Router->addShortRule('objecttest/(\d+)/(\w+)', 'Test/objectMethod/a:integer/b/');
+ToolBox::get()->Router->addShortRule('statictest/(\w+)/(\d+)', 'Test/staticFunction/a/b:integer/[s]');
+ToolBox::get()->Router->addShortRule('globaltest/(\w+)/(\w+)/(\d+)', ':[php/test.class.php]/globalFunction/a/b/c:integer/[r]');
+ToolBox::get()->Router->addShortRule('globaltest2/(\w+)', '/print_r/a/');
+ToolBox::get()->Router->addShortRule(404, 'Test:[php/test.class.php]/fourOfourFunction/[rs]');
+ToolBox::get()->Router->exec();
 
 ?>
 
