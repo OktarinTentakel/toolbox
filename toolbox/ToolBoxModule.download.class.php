@@ -2,7 +2,7 @@
 
 //--|INCLUDES----------
 
-require_once 'toolboxmodule.absclass.php';
+require_once 'ToolBoxModule.absclass.php';
 
 
 

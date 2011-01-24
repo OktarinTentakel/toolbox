@@ -2,15 +2,34 @@
 
 //--|INCLUDES----------
 
-require_once 'toolbox/toolbox.class.php';
+require_once 'toolbox/ToolBox.class.php';
+
+ToolBox::authentification()->registerSingleton(ToolBoxModuleAuthentification::SINGLETON_AUTHENTIFICATOR);
 
 if( isset($_GET['download-requestfile']) ){
 	ToolBox::download()->requestFile($_GET['download-requestfile']);
 	exit();
 }
 
-ToolBox::authentification()->registerSingleton();
-ToolBox::get()->Authentificator->init();
+if( isset($_GET['authentification-Authentificator-login']) ){
+	ToolBox::get()->Authentificator->login('test', 'test', array(array('login' => 'test', 'password' => '098f6bcd4621d373cade4e832627b4f6')));
+}
+
+if( isset($_GET['authentification-Authentificator-logout']) ){
+	ToolBox::get()->Authentificator->logout();
+}
+
+// ++++++++++++++
+
+
+ToolBox::routing()->registerSingleton(ToolBoxModuleRouting::SINGLETON_ROUTER);
+
+ToolBox::get()->Router->addShortRule('objecttest/(.+)/(.+)', 'Test:[php/test.class.php]/objectMethod/a:integer/b/');
+ToolBox::get()->Router->addShortRule('statictest/(.+)/(.+)', 'Test:[php/test.class.php]/staticFunction/a/b:integer/[rs]');
+ToolBox::get()->Router->addShortRule('globaltest/(.+)/(.+)', ':[php/test.class.php]/globalFunction/a/b/c:integer/[r]');
+
+
+// ++++++++++++++
 
 ?>
 
@@ -78,6 +97,20 @@ ToolBox::get()->Authentificator->init();
 					<td>
 						Must be code for a pageview to /home/test:<br>
 						<pre><?=htmlspecialchars(ToolBox::javascript()->printGoogleAnalyticsPageView('UA-XXXXX-X', '/home/etc'))?></pre>
+					</td>
+					<td>
+						no error cases
+					</td>
+				</tr>
+				
+				<!-- ToolBoxAuthentification->Authentificator -->
+				<tr>
+					<td>authentification->Authentificator</td>
+					<td>login / logout</td>
+					<td>
+						Current status: <?=ToolBox::get()->Authentificator->loggedIn() ? 'logged in' : 'logged out'?>
+						<a href="?authentification-Authentificator-login">login</a>
+						<a href="?authentification-Authentificator-logout">logout</a>
 					</td>
 					<td>
 						no error cases

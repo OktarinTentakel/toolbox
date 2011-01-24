@@ -28,12 +28,12 @@ abstract class ToolBoxModule {
 	
 	
 	
-	public function registerSingleton($className = ''){
+	public function registerSingleton($className = '', Array $constructorArgs = null){
 		if( is_array(static::$SINGLETON_CLASSES) && in_array($className, static::$SINGLETON_CLASSES) ){
-			ToolBox::get()->setSingleton($className);
+			ToolBox::get()->setSingleton($className, $constructorArgs);
 		} elseif( is_array(static::$SINGLETON_CLASSES) && (count(static::$SINGLETON_CLASSES) > 0) && ($className == '') ){
 			$className = static::$SINGLETON_CLASSES[0];
-			ToolBox::get()->setSingleton($className);
+			ToolBox::get()->setSingleton($className, $constructorArgs);
 		} else {
 			self::throwSingletonRegisterException($className);
 		}
