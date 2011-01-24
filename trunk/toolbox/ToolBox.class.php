@@ -32,8 +32,10 @@ class ToolBox {
 	
 	
 	
-	public function setSingleton($singletonClassName){
-		$this->singletons[$singletonClassName] = $singletonClassName::get();
+	public function setSingleton($singletonClassName, Array $constructorArgs = null){
+		$this->singletons[$singletonClassName] = $singletonClassName::get($constructorArgs);
+		echo $singletonClassName;
+		print_r(call_user_func(array($singletonClassName, 'get'), $constructorArgs));
 	}
 	
 	
@@ -45,7 +47,7 @@ class ToolBox {
 			require_once "ToolboxModule.$moduleName.class.php";
 			$this->setModule($moduleName, $constructorArgs);
 		}
-		
+		print_r($this->modules);
 		return $this->modules[$moduleName];
 	}
 	

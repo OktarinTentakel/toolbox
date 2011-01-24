@@ -2,14 +2,18 @@
 
 //--|INCLUDES----------
 
-require_once 'toolboxmodule.absclass.php';
+require_once 'ToolBoxModule.absclass.php';
+require_once 'ToolBoxModuleSingleton.absclass.php';
 
 
 
 //--|CLASS----------
 
 class ToolBoxModuleAuthentification extends ToolBoxModule {
-	public static $SINGLETON_CLASSES = array('Authentificator');
+	const DEFAULT_SESSION_NAME = 'ToolBoxAuthentificationSession';
+	
+	const SINGLETON_AUTHENTIFICATOR = 'Authentificator';
+	public static $SINGLETON_CLASSES = array(self::SINGLETON_AUTHENTIFICATOR);
 	
 	
 	// ***
@@ -21,35 +25,33 @@ class ToolBoxModuleAuthentification extends ToolBoxModule {
 
 
 
-class Authentificator {
-	const SESSION_NAME = 'darkwood2admin';
+//--|NESTED-SINGLETON-[Authentificator]----------
+
+class Authentificator extends ToolBoxModuleSingleton {
+
+	const ARGUMENT_SESSION_NAME = 'SESSION_NAME';
 	
 	// ***
-	private static $instance = null;
-	
-	
-	
+	private $sessionName = null;
 	private $user = null;
 	
 	
 	
-	private function __construct(){
-		if( isset($_COOKIE[self::SESSION_NAME]) ){
-			session_name(self::SESSION_NAME);
+	protected function __construct(Array $args = null){
+		parent::__construct($args);
+		
+		if( isset($args[self::ARGUMENT_SESSION_NAME]) ){
+			$this->sessionName = ''.$args[self::ARGUMENT_SESSION_NAME];
+		} else {
+			$this->sessionName = ToolBoxModuleAuthentification::DEFAULT_SESSION_NAME;
+		}
+		
+		if( isset($_COOKIE[$this->sessionName]) ){
+			session_name($this->sessionName);
 			session_start();
 			
-			$this->user = $_SESSION['user'];
+			$this->user = $_SESSION['ToolBox::'.get_class()]->getUser();
 		}
-	}
-	
-	
-	
-	public static function get(){
-		if( is_null(self::$instance) ){
-			self::$instance = new Authentificator();
-		}
-			
-		return self::$instance;
 	}
 	// ***
 	
@@ -61,24 +63,34 @@ class Authentificator {
 	
 	
 	
-	public function login($login, $pass){
-		$this->user = UserQuery::create()
-			->filterByLogin($login)
-			->filterByPassword(md5($pass))
-			->findOne()
-		; 
+	public function login($login, $password, Array $users){
+		foreach($users as $user){
+			if( is_array($user) ){
+				if(
+					($user['login'] == "$login")
+					&& ($user['password'] == md5($password))
+				){
+					$this->user = $user;
+					break;
+				}
+			} elseif( is_object($user) ){
+				if(
+					($user->login == "$login")
+					&& ($user->password == md5($password))
+				){
+					$this->user = $user;
+					break;
+				}
+			}
+		}
 		
 		if( !is_null($this->user) ){
 			if( session_id() == '' ){
-				session_name(self::SESSION_NAME);
+				session_name($this->sessionName);
 				session_start();
 			}
 			
-			$this->user->setLastLogin(date('Y-m-d H:i:s'));
-			$this->user->save();
-			
-			$_SESSION['logged_in'] = true;
-			$_SESSION['user'] = $this->user;
+			$_SESSION['ToolBox::'.get_class()] = self::$instance;
 			
 			return true;
 		} else {
@@ -90,18 +102,22 @@ class Authentificator {
 	
 	public function logout(){
 		$_SESSION = array();
+		$this->user = null;
 		
 		if( isset($_COOKIE[session_name()]) ){
-			setcookie(session_name(), '', time()-42000, '/');
+			setcookie(session_name(), session_id(), time()-42000, '/');
+			unset($_COOKIE[session_name()]);
 		}
 		
-		session_destroy();
+		if( session_id() != '' ){
+			session_destroy();
+		}
 	}
 	
 	
 	
 	public function loggedIn(){
-		return (isset($_SESSION['logged_in']) && $_SESSION['logged_in']);
+		return (isset($_SESSION['ToolBox::'.get_class()]));
 	}
 	
 	
