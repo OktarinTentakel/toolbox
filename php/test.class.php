@@ -18,6 +18,18 @@ class Test {
 		print_r($arg3);
 	}
 	
+	
+	
+	public static function indexFunction(){
+		echo 'INDEX';
+	}
+	
+	
+	
+	public static function fourOfourFunction(){
+		echo '404';
+	}
+	
 }
 
 

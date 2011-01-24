@@ -32,6 +32,8 @@ class Authentificator extends ToolBoxModuleSingleton {
 	const ARGUMENT_SESSION_NAME = 'SESSION_NAME';
 	
 	// ***
+	public static $instance = null;
+	
 	private $sessionName = null;
 	private $user = null;
 	
