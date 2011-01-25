@@ -11,6 +11,16 @@ class Test {
 	
 	
 	
+	public function mixedGetMethod($arg1, $arg2, $arg3 = null){
+		echo 'mixedGetMethod';
+		print_r($arg1);
+		print_r($arg2);
+		print_r($arg3);
+		print_r($_GET);
+	}
+	
+	
+	
 	public static function staticFunction($arg1, $arg2, $arg3 = null){
 		echo 'staticFunction';
 		print_r($arg1);
