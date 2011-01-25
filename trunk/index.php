@@ -21,11 +21,14 @@ if( isset($_GET['authentification-Authentificator-logout']) ){
 }
 
 require_once 'php/test.class.php';
+$testObj = new Test();
 ToolBox::get()->Router->addShortRule('', 'Test:[php/test.class.php]/indexFunction/[rs]');
-ToolBox::get()->Router->addShortRule('objecttest/(\d+)/(\w+)', 'Test/objectMethod/a:integer/b/');
+ToolBox::get()->Router->addShortRule('objecttest/(\d+)/(\w+)', 'Test/objectMethod/a:integer/b/', array('$2', '$1', array('test', 'test')));
+ToolBox::get()->Router->addShortRule('objecttest2/(\d+)/(\w+)', '/objectMethod/a:integer/b/', null, $testObj);
 ToolBox::get()->Router->addShortRule('statictest/(\w+)/(\d+)', 'Test/staticFunction/a/b:integer/[s]');
 ToolBox::get()->Router->addShortRule('globaltest/(\w+)/(\w+)/(\d+)', ':[php/test.class.php]/globalFunction/a/b/c:integer/[r]');
-ToolBox::get()->Router->addShortRule('globaltest2/(\w+)', '/print_r/a/');
+ToolBox::get()->Router->addShortRule('globaltest/(\w+)', '/print_r/a/');
+ToolBox::get()->Router->addShortRule('mixedgettest/(\w+)/(\w+)', '/mixedGetMethod/a/b/[g]', array('aa', 'bb', '$1', '$2'), $testObj);
 ToolBox::get()->Router->addShortRule(404, 'Test:[php/test.class.php]/fourOfourFunction/[rs]');
 ToolBox::get()->Router->exec();
 
@@ -109,6 +112,25 @@ ToolBox::get()->Router->exec();
 						Current status: <?=ToolBox::get()->Authentificator->loggedIn() ? 'logged in' : 'logged out'?>
 						<a href="?authentification-Authentificator-login">login</a>
 						<a href="?authentification-Authentificator-logout">logout</a>
+					</td>
+					<td>
+						no error cases
+					</td>
+				</tr>
+				
+				<!-- ToolBoxRouting->Router -->
+				<tr>
+					<td>routing->Router</td>
+					<td>testroutes</td>
+					<td>
+						<a href="/toolbox">index</a>
+						<a href="/toolbox/objecttest/1/a/">objecttest</a>
+						<a href="/toolbox/objecttest2/1/a/">objecttest2</a>
+						<a href="/toolbox/statictest/a/1">statictest</a>
+						<a href="/toolbox/globaltest/a/b/1/">globaltest</a>
+						<a href="/toolbox/globaltest/1">globaltest2</a>
+						<a href="/toolbox/mixedgettest/x/y">mixedgettest</a>
+						<a href="/toolbox/globaltest/a/1">404</a>
 					</td>
 					<td>
 						no error cases

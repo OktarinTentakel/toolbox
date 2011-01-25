@@ -81,7 +81,7 @@ class Router extends ToolBoxModuleSingleton {
 	
 	private function checkShortSyntax($shortRule){
 		return preg_match(
-			'/^(([A-Z][a-z]+)?(\:\[.+\])?)?\/.+(\/.+(\:.+)?)*\/(\[[rs]+\])?$/',
+			'/^(([A-Z][a-z]+)?(\:\[.+\])?)?\/.+(\/.+(\:.+)?)*\/(\[[rsg]+\])?$/',
 			$shortRule
 		);
 	}
@@ -94,15 +94,27 @@ class Router extends ToolBoxModuleSingleton {
 	
 	
 	
-	public function addRule($regExp, $functionName, Array $functionArguments = null, $className = null, $include = null, $useRequireOnce = true, $callStatic = false){
+	public function addRule(
+		$regExp,
+		$functionName,
+		Array $functionArguments = null,
+		$className = null,
+		$include = null,
+		&$targetObject = null,
+		$useRequireOnce = true,
+		$callStatic = false,
+		$createArgsAsGet = false
+	){
 		$rule = new StdClass();
 		$rule->rex = '/^\/?'.$this->escapeStringForRegExp("$regExp", true).'\/?$/';
 		$rule->class = !is_null($className) ? "$className" : null;
 		$rule->method = "$functionName";
 		$rule->args = $functionArguments;
 		$rule->include = !is_null($include) ? "$include" : null;
+		$rule->target = &$targetObject;
 		$rule->require = $useRequireOnce ? true : false;
 		$rule->static = $callStatic ? true : false;
+		$rule->asget = $createArgsAsGet ? true : false; 
 		
 		if( $regExp !== 404 ){
 			$this->rules[] = $rule;
@@ -121,7 +133,7 @@ class Router extends ToolBoxModuleSingleton {
 	 * for argumentMap (if not set only url-args in that order):
 	 * array('asd', 11, '$1', 'ddd', '$2')
 	 */
-	public function addShortRule($regExp, $shortRule, Array $argumentMap = null){
+	public function addShortRule($regExp, $shortRule, Array $argumentMap = null, &$targetObject = null){
 		if( $this->checkShortSyntax($shortRule) ){
 			$includeString = preg_match('/\:\[(.+\.php)\]/', $shortRule, $includeHits) ? $includeHits[1] : null;
 			$shortRule = !is_null($includeString) ? preg_replace('/\:\[.+\.php\]/', '', $shortRule) : $shortRule;
@@ -141,13 +153,16 @@ class Router extends ToolBoxModuleSingleton {
 				
 				for($i = 0; $i < count($argumentMap); $i++){
 					if( $argumentMap[$i][0] == '$' ){
-						$argPieces = explode(':', $rulePieces[$i+2]); 
-						$arg = new StdClass();
-						$arg->name = $argPieces[0];
-						$arg->val = $argumentMap[$i];
-						$arg->type = (count($argPieces) > 1) ? $argPieces[1] : 'string'; 
-						
-						$functionArguments[] = $arg;
+						$argIndex = intval(str_replace('$', '', $argumentMap[$i]));
+						if( isset($rulePieces[$argIndex+1]) && ($argIndex < count($rulePieces)) ){
+							$argPieces = explode(':', $rulePieces[$argIndex+1]); 
+							$arg = new StdClass();
+							$arg->name = $argPieces[0];
+							$arg->val = $argumentMap[$i];
+							$arg->type = (count($argPieces) > 1) ? $argPieces[1] : 'string'; 
+							
+							$functionArguments[] = $arg;
+						}
 					} else {
 						$arg = new StdClass();
 						$arg->name = null;
@@ -164,8 +179,9 @@ class Router extends ToolBoxModuleSingleton {
 			$modificators = $rulePieces[count($rulePieces)-1];
 			$useRequireOnce = (strpos($modificators, 'r') !== false);
 			$callStatic = (strpos($modificators, 's') !== false);
+			$createArgsAsGet = (strpos($modificators, 'g') !== false);
 			
-			$this->addRule($regExp, $functionName, $functionArguments, $className, $includeString, $useRequireOnce, $callStatic);
+			$this->addRule($regExp, $functionName, $functionArguments, $className, $includeString, $targetObject, $useRequireOnce, $callStatic, $createArgsAsGet);
 		} else {
 			$this->throwShortSyntaxErrorException();
 		}
@@ -200,41 +216,40 @@ class Router extends ToolBoxModuleSingleton {
 			}
 		}
 		
-		if( !is_null($rule->class) ){
+		if( !is_null($rule->class) && is_null($rule->target) ){
 			$routeTarget = new $rule->class();
-		}
-
-		if( is_null($rule->args) ){
-			if( !is_null($rule->class) ){
-				if( !$rule->static ){
-					call_user_func(array($routeTarget, $rule->method));
-				} else {
-					call_user_func(array($rule->class, $rule->method));
-				}
-			} else {
-				call_user_func($rule->method);
-			}
+		} elseif( !is_null($rule->target) ){
+			$routeTarget = &$rule->target;
 		} else {
-			$methodArgs = array();
+			$routeTarget = null;
+		}
+		
+		$methodArgs = array();
+		if( !is_null($rule->args) ){
 			foreach( $rule->args as $arg ){
 				if( is_null($arg->name) ){
 					$methodArgs[] = $arg->val;
 				} else {
-					$value = $argHits[intval($arg->val[1])];
-					settype($value, $arg->type);
-					$methodArgs[] = $value;
+						$value = $argHits[intval(str_replace('$', '', $arg->val))];
+						settype($value, $arg->type);
+						
+						if( !$rule->asget ){
+							$methodArgs[] = $value;
+						} else {
+							$_GET[$arg->name] = $value;
+						}
 				}
 			}
+		}
 			
-			if( !is_null($rule->class) ){
-				if( !$rule->static ){
-					call_user_func_array(array($routeTarget, $rule->method), $methodArgs);
-				} else {
-					call_user_func_array(array($rule->class, $rule->method), $methodArgs);
-				}
+		if( !is_null($routeTarget) ){
+			if( !$rule->static ){
+				call_user_func_array(array($routeTarget, $rule->method), $methodArgs);
 			} else {
-				call_user_func_array($rule->method, $methodArgs);
+				call_user_func_array(array($rule->class, $rule->method), $methodArgs);
 			}
+		} else {
+			call_user_func_array($rule->method, $methodArgs);
 		}
 	}
 }
