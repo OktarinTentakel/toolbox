@@ -18,6 +18,18 @@ class ToolBoxModuleJavascript extends ToolBoxModule {
 	
 	
 	
+	public function arrayToJsArrayString(Array $array){
+		$res = '[';
+		
+		foreach( $array as $message ){
+			$res .= "'$message', ";
+		}
+		
+		return mb_substr($res, 0, mb_strlen($res)-2).']';
+	}
+	
+	
+	
 	//--|GOOGLE-ANALYTICS----------
 	
 	public function printGoogleAnalyticsCode($gaId = 'UA-XXXXX-X', $withoutAutoTracking = false){
