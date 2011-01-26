@@ -8,7 +8,7 @@ require_once 'ToolBoxModule.absclass.php';
 
 //--|CLASS----------
 
-class ToolBoxModuleString extends ToolBoxModule {
+class ToolBoxModuleDatetime extends ToolBoxModule {
 
 	// ***
 	public function __construct($moduleName, $addedArgs){
@@ -18,10 +18,8 @@ class ToolBoxModuleString extends ToolBoxModule {
 	
 	
 	
-	//--|GOOGLE-ANALYTICS----------
-	
-	public function escapeForRegExp($string){
-		return str_replace('/', '\/', preg_quote($string));
+	public function dbDateToIsoDate($dbDate){
+		return ($dbDate != '') ? date('Y-m-d', strtotime($dbDate)) : '';
 	}
 	
 }
