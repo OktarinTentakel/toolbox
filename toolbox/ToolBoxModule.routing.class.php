@@ -81,7 +81,7 @@ class Router extends ToolBoxModuleSingleton {
 	
 	private function checkShortSyntax($shortRule){
 		return preg_match(
-			'/^(([A-Z][a-z]+)?(\:\[.+\])?)?\/.+(\/.+(\:.+)?)*\/(\[[rsg]+\])?$/',
+			'/^(([A-Z][a-zA-Z]+)?(\:\[.+\])?)?\/.+(\/.+(\:.+)?)*\/(\[[rsg]+\])?$/',
 			$shortRule
 		);
 	}
