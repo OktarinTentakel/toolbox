@@ -125,7 +125,7 @@ class Authentificator extends ToolBoxModuleSingleton {
 	
 	
 	public function getUser(){
-		return $this->user;
+		return (object)($this->user);
 	}
 }
 
