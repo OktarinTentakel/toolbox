@@ -33,6 +33,12 @@ class ToolBoxModuleRouting extends ToolBoxModule {
 	}
 	// ***
 	
+	
+	
+	public function redirect($url){
+		header('Location: '.$url);
+	}
+	
 }
 
 
