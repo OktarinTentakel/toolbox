@@ -9,11 +9,11 @@ require_once 'ToolBoxModuleSingleton.absclass.php';
 
 //--|CLASS----------
 
-class ToolBoxModuleAuthentification extends ToolBoxModule {
-	const DEFAULT_SESSION_NAME = 'ToolBoxAuthentificationSession';
+class ToolBoxModuleAuthentication extends ToolBoxModule {
+	const DEFAULT_SESSION_NAME = 'ToolBoxAuthenticationSession';
 	
-	const SINGLETON_AUTHENTIFICATOR = 'Authentificator';
-	public static $SINGLETON_CLASSES = array(self::SINGLETON_AUTHENTIFICATOR);
+	const SINGLETON_AUTHENTICATOR = 'Authenticator';
+	public static $SINGLETON_CLASSES = array(self::SINGLETON_AUTHENTICATOR);
 	
 	
 	// ***
@@ -25,9 +25,9 @@ class ToolBoxModuleAuthentification extends ToolBoxModule {
 
 
 
-//--|NESTED-SINGLETON-[Authentificator]----------
+//--|NESTED-SINGLETON-[Authenticator]----------
 
-class Authentificator extends ToolBoxModuleSingleton {
+class Authenticator extends ToolBoxModuleSingleton {
 
 	const ARGUMENT_SESSION_NAME = 'SESSION_NAME';
 	
@@ -45,7 +45,7 @@ class Authentificator extends ToolBoxModuleSingleton {
 		if( isset($args[self::ARGUMENT_SESSION_NAME]) ){
 			$this->sessionName = ''.$args[self::ARGUMENT_SESSION_NAME];
 		} else {
-			$this->sessionName = ToolBoxModuleAuthentification::DEFAULT_SESSION_NAME;
+			$this->sessionName = ToolBoxModuleAuthentication::DEFAULT_SESSION_NAME;
 		}
 		
 		if( isset($_COOKIE[$this->sessionName]) ){
