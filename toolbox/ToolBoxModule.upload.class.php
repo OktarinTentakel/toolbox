@@ -46,6 +46,12 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 	
 	
 	
+	public function uploadImage($destinationPath, $filedataName, $maxFileSizeMegabytes = 2){
+		return $this->uploadFile($destinationPath, $filedataName, array('jpg', 'png', 'gif'), $maxFileSizeMegabytes);
+	}
+	
+	
+	
 	public function uploadFile($destinationPath, $filedataName, Array $whitelist, $maxFileSizeMegabytes = 5){
 		if(
 			(self::$CONTENT_SIZE > self::$MAX_SIZE) 
