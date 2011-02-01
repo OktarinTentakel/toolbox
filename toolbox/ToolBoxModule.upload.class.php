@@ -18,7 +18,7 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 	public function __construct($moduleName, $addedArgs){
 		parent::__construct($moduleName, $addedArgs);
 		
-		$sizeUnit = strtoupper(substr($POST_MAX_SIZE, -1));
+		$sizeUnit = strtoupper(substr(ini_get('post_max_size'), -1));
 		$unitMultiplier = 
 			($sizeUnit == 'M')
 				? 1048576 
@@ -46,20 +46,19 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 	
 	
 	
-	public function uploadImage($destinationPath, $filedataName, $maxFileSizeMegabytes = 2){
-		return $this->uploadFile($destinationPath, $filedataName, array('jpg', 'png', 'gif'), $maxFileSizeMegabytes);
+	public function uploadImage($destinationPath, $filedataName, $maxFileSizeMegabytes = 2, Closure $nameCreationCallback = null){
+		return $this->uploadFile($destinationPath, $filedataName, array('jpg', 'png', 'gif'), $maxFileSizeMegabytes, $nameCreationCallback);
 	}
 	
 	
 	
-	public function uploadFile($destinationPath, $filedataName, Array $whitelist, $maxFileSizeMegabytes = 5){
+	public function uploadFile($destinationPath, $filedataName, Array $whitelist, $maxFileSizeMegabytes = 5, Closure $nameCreationCallback = null){
 		if(
 			(self::$CONTENT_SIZE > self::$MAX_SIZE) 
 			&& (self::$MAX_SIZE > 0)  
 		){
 			header("HTTP/1.1 500 Internal Server Error");
-			echo "POST exceeded maximum allowed size.";
-			exit(0);
+			die('POST exceeded maximum allowed size. (allowed: '.self::$MAX_SIZE.', POST: '.self::$CONTENT_SIZE);
 		}
 	
 		// general error handling
@@ -78,7 +77,7 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 		} elseif( isset($_FILES[$filedataName]['error']) && ($_FILES[$filedataName]['error'] > 0) ){
 			header('HTTP/1.1 500 Internal Server Error');
 			die($uploadErrors[$_FILES[$filedataName]['error']]);
-		} elseif( !$this->uploadedFileExists($_FILES[$filedataName]['tmp_name']) ){
+		} elseif( !$this->uploadedFileExists($filedataName) ){
 			header('HTTP/1.1 500 Internal Server Error');
 			die('failed uploadedFileExists().');
 			exit(0);
@@ -102,27 +101,39 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 		}
 	
 		// sanitize filename
-		$sanitizedFilename = $this->sanitizeFilename($pathInfo['basename']).'.'.$pathInfo['extension'];
-		if( (strlen($sanitizedFilename) == 0) || (strlen($sanitizedFilename) > self::MAX_FILENAME_LENGTH) ){
+		$sanitizedFilename = $this->sanitizeFilename($pathInfo['filename'], $pathInfo['extension']);
+		if( 
+			(strlen($sanitizedFilename) == (strlen($pathInfo['extension'])+1)) 
+			|| ((strlen($sanitizedFilename) > self::MAX_FILENAME_LENGTH)) 
+		){
 			header('HTTP/1.1 500 Internal Server Error');
 			die('invalid filename, no usable characters or too long');
 		}
 		
-		$serverFile = $destinationPath.$sanitizedFilename;
+		$serverFile = array(
+			'location' => 
+				$destinationPath.(
+					!is_null($nameCreationCallback) 
+					? $nameCreationCallback($sanitizedFilename).'.'.$pathInfo['extension'] 
+					: $sanitizedFilename
+				)
+			,
+			'filename' => $sanitizedFilename
+		);
 
 		// prevent overwriting existing file
-		if( file_exists($serverFile) ){
+		if( file_exists($serverFile['location']) ){
 			header('HTTP/1.1 500 Internal Server Error');
 			die('file already exists');
 		}
 
 		// process file
-		if( !@move_uploaded_file($_FILES[$filedataName]['tmp_name'], $serverFile) ){
+		if( !@move_uploaded_file($_FILES[$filedataName]['tmp_name'], $serverFile['location']) ){
 			header('HTTP/1.1 500 Internal Server Error');
-			die('file could not be saved, check write rights for PHP in target dir: '.$serverFile);
+			die('file could not be saved, check write rights for PHP in target dir: '.$serverFile['location']);
 		}
 	
-		if( !chmod($serverFile, 0775) ){
+		if( !chmod($serverFile['location'], 0775) ){
 			header('HTTP/1.1 500 Internal Server Error');
 			die('could not set access rights');
 		}
@@ -132,11 +143,22 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 	
 	
 	
-	public function sanitizeFilename($name){
-		$usesUnicode = ($name == utf8_encode($name));
+	public function sanitizeFilename($fileName, $extensionToIgnore = null){
+		$usesUnicode = ($fileName == utf8_encode($fileName));
+		
+		if( is_null($extensionToIgnore) ){
+			$pathInfo = pathinfo($fileName);
+			$extensionToIgnore = $pathInfo['extension'];
+		}
+		
+		if( !empty($extensionToIgnore) ){
+			$fileName = preg_replace('/\.'.$extensionToIgnore.'$/'.($usesUnicode ? 'u' : ''), '', $fileName);
+		} else {
+			$extensionToIgnore = '';
+		}
 		
 		$map = array(
-			'\.'.($usesUnicode ? 'u' : '') => '_',
+			'/\./'.($usesUnicode ? 'u' : '') => '_',
 			'/=(\s+)=/'.($usesUnicode ? 'u' : '') => '_',
 			'/ä/'.($usesUnicode ? 'u' : '') => 'ae',
 			'/Ä/'.($usesUnicode ? 'u' : '') => 'Ae',
@@ -153,9 +175,9 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 			'/ê/'.($usesUnicode ? 'u' : '') => 'e'
 		);
 		
-		$saneName = preg_replace(array_keys($map), array_values($map), $name);
+		$saneName = preg_replace(array_keys($map), array_values($map), $fileName);
 
-		return preg_replace('/[^a-zA-Z0-9_-]/'.($usesUnicode ? 'u' : ''), '', $saneName);
+		return preg_replace('/[^a-zA-Z0-9_-]/'.($usesUnicode ? 'u' : ''), '', $saneName).'.'.$extensionToIgnore;
 	}
 	
 }
