@@ -46,13 +46,33 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 	
 	
 	
-	public function uploadImage($destinationPath, $filedataName, $maxFileSizeMegabytes = 2, Closure $nameCreationCallback = null){
-		return $this->uploadFile($destinationPath, $filedataName, array('jpg', 'png', 'gif'), $maxFileSizeMegabytes, $nameCreationCallback);
+	public function uploadImage(
+		$destinationPath,
+		$filedataName,
+		$maxFileSizeMegabytes = 2,
+		Closure $nameCreationCallback = null,
+		$sanitizeFileName = true
+	){
+		return $this->uploadFile(
+			$destinationPath,
+			$filedataName,
+			array('jpg', 'png', 'gif'),
+			$maxFileSizeMegabytes,
+			$nameCreationCallback,
+			$sanitizeFileName
+		);
 	}
 	
 	
 	
-	public function uploadFile($destinationPath, $filedataName, Array $whitelist, $maxFileSizeMegabytes = 5, Closure $nameCreationCallback = null){
+	public function uploadFile(
+		$destinationPath,
+		$filedataName,
+		Array $whitelist,
+		$maxFileSizeMegabytes = 5,
+		Closure $nameCreationCallback = null,
+		$sanitizeFileName = true
+	){
 		if(
 			(self::$CONTENT_SIZE > self::$MAX_SIZE) 
 			&& (self::$MAX_SIZE > 0)  
@@ -101,7 +121,11 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 		}
 	
 		// sanitize filename
-		$sanitizedFilename = $this->sanitizeFilename($pathInfo['filename'], $pathInfo['extension']);
+		$sanitizedFilename = 
+			$sanitizeFileName 
+				? $this->sanitizeFilename($pathInfo['filename'], $pathInfo['extension']) 
+				: $pathInfo['basename']
+		;
 		if( 
 			(strlen($sanitizedFilename) == (strlen($pathInfo['extension'])+1)) 
 			|| ((strlen($sanitizedFilename) > self::MAX_FILENAME_LENGTH)) 
