@@ -48,11 +48,13 @@ class Authenticator extends ToolBoxModuleSingleton {
 			$this->sessionName = ToolBoxModuleAuthentication::DEFAULT_SESSION_NAME;
 		}
 		
-		if( isset($_COOKIE[$this->sessionName]) ){
+		if( isset($_COOKIE[$this->sessionName]) && isset($_SESSION['ToolBox::'.get_class()]) ){
 			session_name($this->sessionName);
 			session_start();
 			
 			$this->user = $_SESSION['ToolBox::'.get_class()]->getUser();
+		} else {
+			$this->logout();
 		}
 	}
 	// ***
