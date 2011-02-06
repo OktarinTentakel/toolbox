@@ -30,7 +30,7 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 		; 
 		
 		self::$MAX_SIZE = intval(ini_get('post_max_size')) * $unitMultiplier;
-		self::$CONTENT_SIZE = intval($_SERVER['CONTENT_LENGTH']);
+		self::$CONTENT_SIZE = isset($_SERVER['CONTENT_LENGTH']) ? intval($_SERVER['CONTENT_LENGTH']) : null;
 	}
 	// ***
 	
