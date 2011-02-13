@@ -74,11 +74,10 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 		$sanitizeFileName = true
 	){
 		if(
-			(self::$CONTENT_SIZE > self::$MAX_SIZE) 
+			(self::$CONTENT_SIZE > self::$MAX_SIZE)
 			&& (self::$MAX_SIZE > 0)  
 		){
-			header("HTTP/1.1 500 Internal Server Error");
-			die('POST exceeded maximum allowed size. (allowed: '.self::$MAX_SIZE.', POST: '.self::$CONTENT_SIZE);
+			throw new Exception('POST exceeded maximum allowed size. (allowed: '.self::$MAX_SIZE.', POST: '.self::$CONTENT_SIZE);
 		}
 	
 		// general error handling
@@ -92,32 +91,25 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 		);
 
 		if( !isset($_FILES[$filedataName]) ){
-			header('HTTP/1.1 500 Internal Server Error');
-			die('no upload found in \$_FILES for '.$filedataName);
+			throw new Exception('no upload found in \$_FILES for '.$filedataName);
 		} elseif( isset($_FILES[$filedataName]['error']) && ($_FILES[$filedataName]['error'] > 0) ){
-			header('HTTP/1.1 500 Internal Server Error');
-			die($uploadErrors[$_FILES[$filedataName]['error']]);
+			throw new Exception($uploadErrors[$_FILES[$filedataName]['error']]);
 		} elseif( !$this->uploadedFileExists($filedataName) ){
-			header('HTTP/1.1 500 Internal Server Error');
-			die('failed uploadedFileExists().');
-			exit(0);
+			throw new Exception('failed uploadedFileExists().');
 		} elseif( !isset($_FILES[$filedataName]['name']) ){
-			header('HTTP/1.1 500 Internal Server Error');
-			die('file has no name.');
+			throw new Exception('file has no name.');
 		}
 	
 		// size error handling
 		$fileSize = @filesize($_FILES[$filedataName]['tmp_name']);
 		if( ($fileSize == 0) || ($fileSize > ($maxFileSizeMegabytes * 1024 * 1024)) ){
-			header('HTTP/1.1 500 Internal Server Error');
-			die('filesize is zero or exceeds the maximum allowed size');
+			throw new Exception('filesize is zero or exceeds the maximum allowed size');
 		}
 
 		// whitelisting
 		$pathInfo = pathinfo($_FILES[$filedataName]['name']);
 		if( !in_array($pathInfo['extension'], $whitelist) ){
-			header('HTTP/1.1 500 Internal Server Error');
-			die('invalid file extension');
+			throw new Exception('invalid file extension');
 		}
 	
 		// sanitize filename
@@ -130,8 +122,7 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 			(strlen($sanitizedFilename) == (strlen($pathInfo['extension'])+1)) 
 			|| ((strlen($sanitizedFilename) > self::MAX_FILENAME_LENGTH)) 
 		){
-			header('HTTP/1.1 500 Internal Server Error');
-			die('invalid filename, no usable characters or too long');
+			throw new Exception('invalid filename, no usable characters or too long');
 		}
 		
 		$serverFile = array(
@@ -147,19 +138,16 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 
 		// prevent overwriting existing file
 		if( file_exists($serverFile['location']) ){
-			header('HTTP/1.1 500 Internal Server Error');
-			die('file already exists');
+			throw new Exception('file already exists');
 		}
 
 		// process file
 		if( !@move_uploaded_file($_FILES[$filedataName]['tmp_name'], $serverFile['location']) ){
-			header('HTTP/1.1 500 Internal Server Error');
-			die('file could not be saved, check write rights for PHP in target dir: '.$serverFile['location']);
+			throw new Exception('file could not be saved, check write rights for PHP in target dir: '.$serverFile['location']);
 		}
 	
 		if( !chmod($serverFile['location'], 0775) ){
-			header('HTTP/1.1 500 Internal Server Error');
-			die('could not set access rights');
+			throw new Exception('could not set access rights');
 		}
 		
 		return $serverFile;
