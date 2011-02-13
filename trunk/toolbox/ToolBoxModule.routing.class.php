@@ -35,8 +35,12 @@ class ToolBoxModuleRouting extends ToolBoxModule {
 	
 	
 	
-	public function redirect($url){
-		header('Location: '.$url);
+	public function redirect($url, $noCache = false){
+		if( $noCache ){
+			header('Location: '.$url, true, 302);
+		} else {
+			header('Location: '.$url);
+		}
 	}
 	
 }
