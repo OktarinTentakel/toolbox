@@ -129,7 +129,7 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 			'location' => 
 				$destinationPath.(
 					!is_null($nameCreationCallback) 
-					? $nameCreationCallback($sanitizedFilename).'.'.$pathInfo['extension'] 
+					? $nameCreationCallback($sanitizedFilename)
 					: $sanitizedFilename
 				)
 			,
