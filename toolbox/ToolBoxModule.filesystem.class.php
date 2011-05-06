@@ -36,6 +36,23 @@ class ToolBoxModuleFilesystem extends ToolBoxModule {
 		}
 	}
 	
+	
+	
+	public function searchForFiles($basepath, $filename){
+		$matches = array();
+		
+		$dirIterator = new RecursiveDirectoryIterator($basepath);
+		$itIterator = new RecursiveIteratorIterator($dirIterator, RecursiveIteratorIterator::SELF_FIRST);
+		
+		foreach( $itIterator as $file ){
+			if( $file->isFile() && ($filename == $file->getFilename()) ){
+				$matches[] = str_replace(array('\\', $basepath), array('/', ''), $file->getPathname());
+			}
+		}
+		
+		return $matches;
+	}
+	
 }
 
 ?>

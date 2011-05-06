@@ -149,20 +149,23 @@ ToolBox::get()->Router->exec();
 						Updates (first processed must be 1, second 0):<br>
 						<?php
 							ToolBox::get()->SqliteConnection->exec('UPDATE Changelog SET processed = 1 WHERE 1');
-							print_r(ToolBox::get()->SqliteConnection->query('SELECT * FROM Changelog WHERE 1 LIMIT 1;'));
+							$tmp = ToolBox::get()->SqliteConnection->query('SELECT * FROM Changelog WHERE 1 LIMIT 1;');
+							echo $tmp[0]['processed'];
 						?>
 						<br>
 						<?php
 							ToolBox::get()->SqliteConnection->exec('UPDATE Changelog SET processed = 0 WHERE 1');
-							print_r(ToolBox::get()->SqliteConnection->query('SELECT * FROM Changelog WHERE 1 LIMIT 1;'));
+							$tmp = ToolBox::get()->SqliteConnection->query('SELECT * FROM Changelog WHERE 1 LIMIT 1;');
+							echo $tmp[0]['processed'];
 						?>
 						<br><br>
-						Mass Execution (executes two updates as one operation, processed must be 0):<br>
+						Mass Execution (executes two updates as one operation, must be 0):<br>
 						<?php
 							ToolBox::get()->SqliteConnection->addExecQuery('UPDATE Changelog SET processed = 1 WHERE 1');
 							ToolBox::get()->SqliteConnection->addExecQuery('UPDATE Changelog SET processed = 0 WHERE 1');
 							ToolBox::get()->SqliteConnection->execAll();
-							print_r(ToolBox::get()->SqliteConnection->query('SELECT * FROM Changelog WHERE 1 LIMIT 1;'));
+							$tmp = ToolBox::get()->SqliteConnection->query('SELECT * FROM Changelog WHERE 1 LIMIT 1;');
+							echo $tmp[0]['processed'];
 						?>
 					</td>
 					<td>
