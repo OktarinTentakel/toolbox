@@ -10,7 +10,8 @@ require_once 'ToolBoxModule.absclass.php';
 
 class ToolBoxModuleStorage extends ToolBoxModule {
 	const SINGLETON_SQLITECONNECTION = 'SqliteConnection';
-	public static $SINGLETON_CLASSES = array(self::SINGLETON_SQLITECONNECTION);
+	const SINGLETON_SOLRLUKEHELPER = 'SolrLukeHelper';
+	public static $SINGLETON_CLASSES = array(self::SINGLETON_SQLITECONNECTION, self::SINGLETON_SOLRLUKECONNECTION);
 
 	// ***
 	public function __construct($moduleName, $addedArgs){
@@ -43,7 +44,7 @@ class SqliteConnection extends ToolBoxModuleSingleton {
 		if( isset($args[self::DB_FILE]) ){
 			$this->dbFile = ''.$args[self::DB_FILE];
 		} else {
-			$this->throwModuleException(__FUNCTION__.': no database-file given');
+			$this->throwMissingSingletonDataException(self::DB_FILE);
 		}
 	}
 	// ***
@@ -181,6 +182,93 @@ class SqliteConnection extends ToolBoxModuleSingleton {
 		$this->close();
 		
 		$this->execQueries = array();
+	}
+	
+}
+
+
+
+//--|NESTED-SINGLETON-[SolrLukeHelper]----------
+
+class SolrLukeHelper extends ToolBoxModuleSingleton {
+	
+	const SOLR_ADMIN_URL = 'SOLR_ADMIN_URL';
+	const DEFAULT_SOLR_ADMIN_URL = 'http://%SERVER_NAME%:8080/solr/admin/';
+	const OPTIMIZE_THRESHOLD = 'OPTIMIZE_THRESHOLD';
+	const DEFAULT_OPTIMIZE_THRESHOLD = 10;
+	const INDEX_XPATH = '/response/lst[@name="index"]/';
+	
+	// ***
+	private static $instance;
+	
+	private $indexStats = null;
+	private $solrAdminUrl = null;
+	private $optimizeThreshold = null;
+	
+	protected function __construct(Array $args = null){
+		if( isset($args[self::SOLR_ADMIN_URL]) ){
+			$this->solrAdminUrl = ''.$args[self::SOLR_ADMIN_URL];
+		} else {
+			$this->solrAdminUrl = str_replace('%SERVER_NAME%', $_SERVER['SERVER_NAME'], self::DEFAULT_SOLR_ADMIN_URL);
+		}
+		
+		if( isset($args[self::OPTIMIZE_THRESHOLD]) ){
+			$this->optimizeThreshold = intval($args[self::OPTIMIZE_THRESHOLD]);
+		} else {
+			$this->optimizeThreshold = self::DEFAULT_OPTIMIZE_THRESHOLD;
+		}
+		
+		$xml = simplexml_load_file($this->solrAdminUrl.'luke?fl=*');
+		
+ 		$this->indexStats = new StdClass();
+ 		$this->indexStats->numDocs = $this->extractValue($xml->xpath(self::INDEX_XPATH.'*[@name="numDocs"]'));
+ 		$this->indexStats->maxDoc = $this->extractValue($xml->xpath(self::INDEX_XPATH.'*[@name="maxDoc"]'));
+ 		$this->indexStats->optimized = $this->extractValue($xml->xpath(self::INDEX_XPATH.'*[@name="optimized"]'));
+ 		$this->indexStats->current = $this->extractValue($xml->xpath(self::INDEX_XPATH.'*[@name="current"]'));
+ 		$this->indexStats->hasDeletions = $this->extractValue($xml->xpath(self::INDEX_XPATH.'*[@name="hasDeletions"]'));
+ 		$this->indexStats->lastModified = $this->extractValue($xml->xpath(self::INDEX_XPATH.'*[@name="lastModified"]'));
+	}
+	// ***
+	
+	
+	
+	//--|GETTER----------
+	
+	public function getActiveDocumentCount(){
+		return intval($this->indexStats->numDocs);
+	}
+	
+	
+	
+	public function getTotalDocumentCount(){
+		return intval($this->indexStats->maxDoc);
+	}
+	
+	
+	
+	public function getDeletedDocumentCount(){
+		if( $this->indexStats->hasDeletions == 'true' ){
+			return $this->getTotalDocumentCount() - $this->getActiveDocumentCount();
+		} else {
+			return 0;
+		}
+	}
+	
+	
+	
+	//--|FUNCTIONALITY----------
+	
+	public function optimizeIndexIfNecessary(&$solr){
+		if( $this->getDeletedDocumentCount() >= $this->optimizeThreshold ){
+			$solr->optimize();
+		}
+	}
+	
+	
+	
+	private function extractValue(Array $elem){
+		$res = ''.$elem[0];
+		return $res;
 	}
 	
 }

@@ -22,6 +22,12 @@ class ToolBoxModuleGeneration extends ToolBoxModule {
 		return md5(uniqid(is_null($seed) ? mt_rand() : $seed, true));
 	}
 	
+	
+	
+	public static function microRandId(){
+		return md5(''.microtime().rand());
+	}
+	
 }
 
 ?>
