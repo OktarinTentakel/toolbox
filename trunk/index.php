@@ -4,20 +4,21 @@
 
 require_once 'toolbox/ToolBox.class.php';
 
-ToolBox::authentification()->registerSingleton(ToolBoxModuleAuthentification::SINGLETON_AUTHENTIFICATOR);
+ToolBox::authentication()->registerSingleton(ToolBoxModuleAuthentication::SINGLETON_AUTHENTICATOR);
 ToolBox::routing()->registerSingleton(ToolBoxModuleRouting::SINGLETON_ROUTER);
+ToolBox::storage()->registerSingleton(ToolBoxModuleStorage::SINGLETON_SQLITECONNECTION, array('DB_FILE' => 'db/db.sqlite'));
 
 if( isset($_GET['download-requestfile']) ){
 	ToolBox::download()->requestFile($_GET['download-requestfile']);
 	exit();
 }
 
-if( isset($_GET['authentification-Authentificator-login']) ){
-	ToolBox::get()->Authentificator->login('test', 'test', array(array('login' => 'test', 'password' => '098f6bcd4621d373cade4e832627b4f6')));
+if( isset($_GET['authentication-Authenticator-login']) ){
+	ToolBox::get()->Authenticator->login('test', 'test', array(array('login' => 'test', 'password' => '098f6bcd4621d373cade4e832627b4f6')));
 }
 
-if( isset($_GET['authentification-Authentificator-logout']) ){
-	ToolBox::get()->Authentificator->logout();
+if( isset($_GET['authentication-Authenticator-logout']) ){
+	ToolBox::get()->Authenticator->logout();
 }
 
 require_once 'php/test.class.php';
@@ -104,14 +105,14 @@ ToolBox::get()->Router->exec();
 					</td>
 				</tr>
 				
-				<!-- ToolBoxAuthentification->Authentificator -->
+				<!-- ToolBoxAuthentification->Authenticator -->
 				<tr>
-					<td>authentification->Authentificator</td>
+					<td>authentication->Authenticator</td>
 					<td>login / logout</td>
 					<td>
-						Current status: <?=ToolBox::get()->Authentificator->loggedIn() ? 'logged in' : 'logged out'?>
-						<a href="?authentification-Authentificator-login">login</a>
-						<a href="?authentification-Authentificator-logout">logout</a>
+						Current status: <?=ToolBox::get()->Authenticator->loggedIn() ? 'logged in' : 'logged out'?>
+						<a href="?authentication-Authenticator-login">login</a>
+						<a href="?authentication-Authenticator-logout">logout</a>
 					</td>
 					<td>
 						no error cases
@@ -131,6 +132,38 @@ ToolBox::get()->Router->exec();
 						<a href="/toolbox/globaltest/1">globaltest2</a>
 						<a href="/toolbox/mixedgettest/x/y">mixedgettest</a>
 						<a href="/toolbox/globaltest/a/1">404</a>
+					</td>
+					<td>
+						no error cases
+					</td>
+				</tr>
+				
+				<!-- ToolBoxStorage->SqliteConnection -->
+				<tr>
+					<td>storage->SqliteConnection</td>
+					<td>CRUD</td>
+					<td>
+						Simple Select:<br>
+						<?php print_r(ToolBox::get()->SqliteConnection->query('SELECT * FROM Changelog WHERE 1 LIMIT 1;')); ?>
+						<br><br>
+						Updates (first processed must be 1, second 0):<br>
+						<?php
+							ToolBox::get()->SqliteConnection->exec('UPDATE Changelog SET processed = 1 WHERE 1');
+							print_r(ToolBox::get()->SqliteConnection->query('SELECT * FROM Changelog WHERE 1 LIMIT 1;'));
+						?>
+						<br>
+						<?php
+							ToolBox::get()->SqliteConnection->exec('UPDATE Changelog SET processed = 0 WHERE 1');
+							print_r(ToolBox::get()->SqliteConnection->query('SELECT * FROM Changelog WHERE 1 LIMIT 1;'));
+						?>
+						<br><br>
+						Mass Execution (executes two updates as one operation, processed must be 0):<br>
+						<?php
+							ToolBox::get()->SqliteConnection->addExecQuery('UPDATE Changelog SET processed = 1 WHERE 1');
+							ToolBox::get()->SqliteConnection->addExecQuery('UPDATE Changelog SET processed = 0 WHERE 1');
+							ToolBox::get()->SqliteConnection->execAll();
+							print_r(ToolBox::get()->SqliteConnection->query('SELECT * FROM Changelog WHERE 1 LIMIT 1;'));
+						?>
 					</td>
 					<td>
 						no error cases

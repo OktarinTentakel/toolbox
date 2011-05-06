@@ -9,6 +9,8 @@ require_once 'ToolBoxModule.absclass.php';
 //--|CLASS----------
 
 class ToolBoxModuleStorage extends ToolBoxModule {
+	const SINGLETON_SQLITECONNECTION = 'SqliteConnection';
+	public static $SINGLETON_CLASSES = array(self::SINGLETON_SQLITECONNECTION);
 
 	// ***
 	public function __construct($moduleName, $addedArgs){
