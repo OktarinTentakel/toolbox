@@ -11,7 +11,7 @@ require_once 'ToolBoxModule.absclass.php';
 class ToolBoxModuleStorage extends ToolBoxModule {
 	const SINGLETON_SQLITECONNECTION = 'SqliteConnection';
 	const SINGLETON_SOLRLUKEHELPER = 'SolrLukeHelper';
-	public static $SINGLETON_CLASSES = array(self::SINGLETON_SQLITECONNECTION, self::SINGLETON_SOLRLUKECONNECTION);
+	public static $SINGLETON_CLASSES = array(self::SINGLETON_SQLITECONNECTION, self::SINGLETON_SOLRLUKEHELPER);
 
 	// ***
 	public function __construct($moduleName, $addedArgs){

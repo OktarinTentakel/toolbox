@@ -173,6 +173,34 @@ ToolBox::get()->Router->exec();
 					</td>
 				</tr>
 				
+				<!-- ToolBoxVariable -->
+				<tr>
+					<td>variable</td>
+					<td>createValueCheck</td>
+					<td>
+						Null-Checks (must be yes/no/yes/no):<br>
+						<?php echo ToolBox::variable()->isNull(null, null, null) ? 'yes' : 'no'; ?><br>
+						<?php echo ToolBox::variable()->isNull(null, 'a', null) ? 'yes' : 'no'; ?><br>
+						<?php echo ToolBox::variable()->isNotNull(5, 'a', new StdClass()) ? 'yes' : 'no'; ?><br>
+						<?php echo ToolBox::variable()->isNotNull(null, 'a', new StdClass()) ? 'yes' : 'no'; ?><br>
+						<br>
+						Empty-Checks (must be yes/no/yes/no):<br>
+						<?php echo ToolBox::variable()->isEmpty(false, null, '0') ? 'yes' : 'no'; ?><br>
+						<?php echo ToolBox::variable()->isEmpty(0, '3', 'false') ? 'yes' : 'no'; ?><br>
+						<?php echo ToolBox::variable()->isNotEmpty('asd', new StdClass(), '01') ? 'yes' : 'no'; ?><br>
+						<?php echo ToolBox::variable()->isNotEmpty('123', true, array()) ? 'yes' : 'no'; ?><br>
+						<br>
+						Rule-Checks (must be yes/no/yes/no):<br>
+						<?php echo ToolBox::variable()->applyRuleToValues(function($val){ return $val > 5; }, array(7, 66, 123)) ? 'yes' : 'no'; ?><br>
+						<?php echo ToolBox::variable()->applyRuleToValues(function($val){ return $val <= 42; }, array(7, 42, 123)) ? 'yes' : 'no'; ?><br>
+						<?php echo ToolBox::variable()->applyRuleToValues(function($val){ return $val % 2 == 0; }, array(2, 42, 166)) ? 'yes' : 'no'; ?><br>
+						<?php echo ToolBox::variable()->applyRuleToValues(function($val){ return is_bool($val); }, array(true, false, 0)) ? 'yes' : 'no'; ?><br>
+					</td>
+					<td>
+						no error cases
+					</td>
+				</tr>
+				
 			</tbody>
 			<tfoot>
 				<tr>

@@ -18,11 +18,15 @@ class ToolBoxModuleDownload extends ToolBoxModule {
 	
 	
 	
-	public function requestFile($file){
+	public function requestFile($file, $mimeTypeOverwrite = null){
 		if( file_exists($file) ){
 			$pathInfo = pathinfo($file);
 			
-			header('Content-type: application/'.$pathInfo['extension']);
+			if( is_null($mimeTypeOverwrite) ){
+				header('Content-type: application/'.$pathInfo['extension']);
+			} else {
+				header('Content-type: '.$mimeTypeOverwrite);
+			}
 			header('Content-Disposition: attachment; filename="'.$pathInfo['basename'].'"');
 			
 			readfile($file);
