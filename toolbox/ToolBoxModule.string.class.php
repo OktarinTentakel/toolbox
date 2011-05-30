@@ -89,7 +89,14 @@ class ToolBoxModuleString extends ToolBoxModule {
 		}
 		
 		return $res;
-	}	
+	}
+	
+	
+	
+	public function truncate($string, $charCount = 80, $suffix = '...'){
+		$truncString = mb_substr("$string", 0, $charCount); 
+		return (mb_strlen($string) != mb_strlen($truncString)) ? $truncString.$suffix : $truncString;
+	}
 	
 }
 
