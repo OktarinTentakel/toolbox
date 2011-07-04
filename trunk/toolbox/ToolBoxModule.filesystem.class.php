@@ -19,8 +19,8 @@ class ToolBoxModuleFilesystem extends ToolBoxModule {
 	
 	
 	public function isEmptyDirectory($dir){
-		$count = 0;
 		if( is_dir($dir) ){
+			$count = 0;
 			$files = opendir($dir);
 			
 			while( $file=readdir($files) !== false ){
@@ -32,7 +32,26 @@ class ToolBoxModuleFilesystem extends ToolBoxModule {
 			
 			return true;
 		} else {
-			return false;
+			$this->throwModuleException(__FUNCTION__.': io-error, given dir no directory or not readable');
+		}
+	}
+	
+	
+	
+	public static function countDirectoryFiles($dir){
+		if( is_dir($dir) ){
+			$count = 0;
+			$files = opendir($dir);
+			
+			while( $file=readdir($files) !== false ){
+				if( !is_dir($file) ){
+					$count++;
+				}
+			}
+			
+			return ($count - 2);
+		} else {
+			$this->throwModuleException(__FUNCTION__.': io-error, given dir no directory or not readable');
 		}
 	}
 	
