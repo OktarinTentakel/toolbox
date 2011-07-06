@@ -41,6 +41,8 @@ class ToolBoxModuleRouting extends ToolBoxModule {
 		} else {
 			header('Location: '.$url);
 		}
+		
+		exit();
 	}
 	
 }
@@ -137,7 +139,7 @@ class Router extends ToolBoxModuleSingleton {
 	
 	/**
 	 * Syntax:
-	 * Class:includestring/method/arg1:type/arg2:type/.../[rs]
+	 * Class:[includestring]/method/arg1:type/arg2:type/.../[rs]
 	 * /method/arg/ 
 	 * 
 	 * for argumentMap (if not set only url-args in that order):
@@ -152,7 +154,7 @@ class Router extends ToolBoxModuleSingleton {
 			$className = ($rulePieces[0] != '') ? $rulePieces[0] : null; 
 			$functionName = $rulePieces[1];
 			
-			if( count($rulePieces) > 3 ){
+			if( (count($rulePieces) > 3) || !is_null($argumentMap) ){
 				$functionArguments = array();
 				
 				if( is_null($argumentMap) || (count($argumentMap) == 0) ){
