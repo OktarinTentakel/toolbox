@@ -18,8 +18,36 @@ class ToolBoxModuleString extends ToolBoxModule {
 	
 	
 	
+	//--|MAGIC----------
+	
+	public function __call($name, $args){
+		if( strpos($name, 'auto_') === 0 ){
+			return $this->autoSelectMethod(substr($name, 5), $args);
+		}
+	}
+	
+	
+	
+	//--|FUNCTIONALITY----------
+	
 	public function escapeForRegExp($string){
 		return str_replace('/', '\/', preg_quote($string));
+	}
+	
+	
+	
+	public function utf8EnvironmentSet(){
+		return (
+			(ini_get('default_charset') == 'UTF-8')
+			&& (ini_get('mbstring.internal_encoding') == 'UTF-8')
+			&& (ini_get('mbstring.http_output') == 'UTF-8')
+		);
+	}
+	
+	
+	
+	public function autoSelectMethod($name, Array $args = array()){
+		return call_user_func_array(($this->utf8EnvironmentSet() ? 'mb_' : '').$name, $args);
 	}
 	
 	
@@ -96,6 +124,12 @@ class ToolBoxModuleString extends ToolBoxModule {
 	public function truncate($string, $charCount = 80, $suffix = '...'){
 		$truncString = mb_substr("$string", 0, $charCount); 
 		return (mb_strlen($string) != mb_strlen($truncString)) ? $truncString.$suffix : $truncString;
+	}
+	
+	
+	
+	public function startsWith($target, $search){
+		return strncmp("$target", "$search", $this->autoSelectMethod('strlen', array($search)));
 	}
 	
 }

@@ -23,7 +23,7 @@ class ToolBoxModuleFilesystem extends ToolBoxModule {
 			$count = 0;
 			$files = opendir($dir);
 			
-			while( $file=readdir($files) !== false ){
+			while( $file=readdir($files) ){
 				$count++;
 				if( $count > 2 ){
 					return false;
@@ -43,13 +43,13 @@ class ToolBoxModuleFilesystem extends ToolBoxModule {
 			$count = 0;
 			$files = opendir($dir);
 			
-			while( $file=readdir($files) !== false ){
-				if( !is_dir($file) ){
+			while( $file=readdir($files) ){
+				if( !is_dir($file) && (strncmp($file, '.', 1) != 0) ){
 					$count++;
 				}
 			}
 			
-			return ($count - 2);
+			return $count;
 		} else {
 			$this->throwModuleException(__FUNCTION__.': io-error, given dir no directory or not readable');
 		}
