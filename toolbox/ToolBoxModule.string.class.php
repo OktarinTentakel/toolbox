@@ -129,7 +129,13 @@ class ToolBoxModuleString extends ToolBoxModule {
 	
 	
 	public function startsWith($target, $search){
-		return strncmp("$target", "$search", $this->autoSelectMethod('strlen', array($search)));
+		return (strncmp("$target", "$search", $this->autoSelectMethod('strlen', array($search))) == 0);
+	}
+	
+	
+	
+	public function splitByCaps($string, $splitChar = ' '){
+		return preg_replace('/([a-z0-9])([A-Z])/', '$1'.$splitChar.'$2', $string);
 	}
 	
 }
