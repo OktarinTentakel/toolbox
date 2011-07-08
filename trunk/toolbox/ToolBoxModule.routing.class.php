@@ -165,9 +165,24 @@ class Router extends ToolBoxModuleSingleton {
 				
 				for($i = 0; $i < count($argumentMap); $i++){
 					if( $argumentMap[$i][0] == '$' ){
-						$argIndex = intval(str_replace('$', '', $argumentMap[$i]));
-						if( isset($rulePieces[$argIndex+1]) && ($argIndex < count($rulePieces)) ){
-							$argPieces = explode(':', $rulePieces[$argIndex+1]); 
+						$argPieces = null;
+					
+						if( preg_match('/^\$[1-9]+$/', $argumentMap[$i]) ){
+							$argIndex = intval(str_replace('$', '', $argumentMap[$i]));
+							if( isset($rulePieces[$argIndex+1]) && ($argIndex < count($rulePieces)) ){
+								$argPieces = explode(':', $rulePieces[$argIndex+1]); 
+							}
+						} else {
+							$argName = str_replace('$', '', $argumentMap[$i]);
+							foreach( $rulePieces as $rulePiece ){
+								if( strncmp($rulePiece, $argName, strlen($argName)) == 0 ){
+									$argPieces = explode(':', $rulePiece); 
+									break;
+								}
+							}
+						}
+						
+						if( !is_null($argPieces) ){
 							$arg = new StdClass();
 							$arg->name = $argPieces[0];
 							$arg->val = $argumentMap[$i];
@@ -242,7 +257,9 @@ class Router extends ToolBoxModuleSingleton {
 				if( is_null($arg->name) ){
 					$methodArgs[] = $arg->val;
 				} else {
-						$value = $argHits[intval(str_replace('$', '', $arg->val))];
+						$argValue = str_replace('$', '', $arg->val);
+						$argKey = preg_match('/^[1-9]+$/', $arg->val) ? intval($argValue) : $argValue;
+						$value = $argHits[$argKey];
 						settype($value, $arg->type);
 						
 						if( !$rule->asget ){

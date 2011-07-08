@@ -1,8 +1,9 @@
 <?php
 
 
-class ToolBoxModuleSingleton {
-	
+abstract class ToolBoxModuleSingleton {
+
+	// ***
 	protected function __construct(Array $args = null){}
 	
 	
@@ -15,11 +16,20 @@ class ToolBoxModuleSingleton {
 			
 		return static::$instance;
 	}
+	// ***
 	
 	
+	
+	//--|FUNCTIONALITY----------
 	
 	protected function throwMissingSingletonDataException($missingDataName){
 		throw new Exception('ToolBoxException | singleton for "'.get_class($this).'" could not be constructed, missing data "'.$missingDataName.'"');
+	}
+	
+	
+	
+	protected function throwMissingSingletonRessourceException($missingDataName){
+		throw new Exception('ToolBoxException | singleton for "'.get_class($this).'" could not be constructed, missing ressource "'.$missingDataName.'"');
 	}
 }
 

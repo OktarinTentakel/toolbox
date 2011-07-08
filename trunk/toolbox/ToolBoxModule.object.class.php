@@ -23,16 +23,16 @@ class ToolBoxModuleObject extends ToolBoxModule {
 		
 		if( is_array($object) ){
 			foreach( $object as $key => $value ){
-				$return[$key] = self::objectToArray($value);
+				$return[$key] = self::toAssocArray($value);
 			}
 		} else {
 			$var = get_object_vars($object);
 			
-			if( $var ){
+			if( !is_null($var) ){
 				foreach( $var as $key => $value ){
-					$return[$key] = ($key && ($value==null)) ? null : self::objectToArray($value);
+					$return[$key] = ($key && ($value==null)) ? null : self::toAssocArray($value);
 				}
-			}else{
+			} else {
 				return "$object";
 			}
 		}
