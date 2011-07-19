@@ -201,6 +201,19 @@ ToolBox::get()->Router->exec();
 					</td>
 				</tr>
 				
+				<!-- ToolBoxImage -->
+				<tr>
+					<td>image</td>
+					<td>getDominantColors</td>
+					<td>
+						Must be an Array of two colors, where the first is very dark (near near black) and the second very bright (near white)<br>
+						<?php print_r(ToolBox::image()->getDominantColors('media/download.png')); ?>
+					</td>
+					<td>
+						no error cases
+					</td>
+				</tr>
+				
 			</tbody>
 			<tfoot>
 				<tr>
