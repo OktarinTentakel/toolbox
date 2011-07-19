@@ -81,6 +81,20 @@ class ToolBoxModuleImage extends ToolBoxModule {
 			$this->throwModuleException(__FUNCTION__.': io-error, file not found');
 		}
 	}
+	
+	
+	
+	public function hexColorToDecArray($hexColorString){
+		if( preg_match('/^[0-9a-fA-F]{6}$/', $hexColorString) ){
+			$red = substr($hexColorString, 0, 2);
+			$green = substr($hexColorString, 2, 2);
+			$blue = substr($hexColorString, 4, 2);
+			
+			return array(hexdec($red), hexdec($green), hexdec($blue));
+		} else {
+			$this->throwModuleException(__FUNCTION__.': wrong format, argument no hex-color-string');
+		}
+	}
 
 }
 

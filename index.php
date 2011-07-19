@@ -214,6 +214,19 @@ ToolBox::get()->Router->exec();
 					</td>
 				</tr>
 				
+				<!-- ToolBoxImage -->
+				<tr>
+					<td>image</td>
+					<td>hexColorToDecArray</td>
+					<td>
+						Must be Array of 240s<br>
+						<?php print_r(ToolBox::image()->hexColorToDecArray('f0f0f0')); ?>
+					</td>
+					<td>
+						no error cases
+					</td>
+				</tr>
+				
 			</tbody>
 			<tfoot>
 				<tr>
