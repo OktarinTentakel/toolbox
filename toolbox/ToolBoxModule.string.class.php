@@ -113,7 +113,9 @@ class ToolBoxModuleString extends ToolBoxModule {
 		
 		foreach( $pieces as $keyValue ){
 			$keyValue = explode($separator, $keyValue, 2);
-			$res->{trim($keyValue[0])} = trim($keyValue[1]);
+			if( count($keyValue) > 1 ){
+				$res->{trim($keyValue[0])} = trim($keyValue[1]);
+			}
 		}
 		
 		return $res;
