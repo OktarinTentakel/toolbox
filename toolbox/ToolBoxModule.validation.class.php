@@ -18,14 +18,20 @@ class ToolBoxModuleValidation extends ToolBoxModule {
 	
 	
 	
-	public function isDigit($value) {
+	public function isDigit($value){
 		return preg_match("/^[0-9]+$/", $value);
 	}
 	
 	
 	
-	public function isNumber($value) {
+	public function isNumber($value){
 		return preg_match("/^\-?[0-9]+$/", $value);
+	}
+	
+	
+	
+	public function isBoolean($value){
+		return (is_bool($value) || in_array($value, array('true', 'false')));
 	}
 	
 	
