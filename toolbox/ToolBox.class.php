@@ -42,7 +42,7 @@ class ToolBox {
 	
 	public function getModule($moduleName, $constructorArgs){
 		if( !$this->moduleLoaded($moduleName) ){
-			require_once "ToolboxModule.$moduleName.class.php";
+			require_once "ToolBoxModule.$moduleName.class.php";
 			$this->setModule($moduleName, $constructorArgs);
 		}
 		
