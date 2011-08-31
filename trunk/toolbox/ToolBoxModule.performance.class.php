@@ -233,7 +233,7 @@ class SimpleApcOutputCache extends SimpleOutputCache {
 	
 	
 	public function flush(){
-		$cacheInfo = apc_cache_info('user');
+		$cacheInfo = apc_cache_info('user', true);
 		apc_clear_cache('user');
 		
 		return $cacheInfo['num_entries'];
