@@ -1,8 +1,15 @@
 <?php
 
+set_include_path(
+	dirname(__FILE__)
+	.PATH_SEPARATOR.get_include_path()
+);
+
 //--|INCLUDES----------
 
 require_once 'toolbox/ToolBox.class.php';
+require_once 'simpletest/autorun.php';
+require_once 'simpletest/reporter.php';
 
 ToolBox::authentication()->registerSingleton(ToolBoxModuleAuthentication::SINGLETON_AUTHENTICATOR);
 ToolBox::routing()->registerSingleton(ToolBoxModuleRouting::SINGLETON_ROUTER);
@@ -32,6 +39,49 @@ ToolBox::get()->Router->addShortRule('globaltest/(\w+)', '/print_r/a/');
 ToolBox::get()->Router->addShortRule('mixedgettest/(\w+)/(\w+)', '/mixedGetMethod/a/b/[g]', array('aa', 'bb', '$1', '$2'), $testObj);
 ToolBox::get()->Router->addShortRule(404, 'Test:[php/test.class.php]/fourOfourFunction/[rs]');
 ToolBox::get()->Router->exec();
+
+class TestOutput extends HtmlReporter {
+	public function __construct(){
+		parent::__construct('utf-8');
+	}
+	
+	
+	
+	public function paintFail($message){
+		parent::paintFail($message);
+	}
+	
+	
+	
+	public function paintPass($message){
+		parent::paintPass($message);
+		echo
+			 '<span class="pass">Pass</span>:'
+			.implode('&nbsp;&gt;&nbsp;', array_splice($this->getTestList(), 3))
+			.'->'.$message
+			.'<br/>'
+		;
+	}
+	
+	
+	
+	protected function getCss(){
+		return
+			 parent::getCss()
+			.''
+		;
+	}
+}
+
+class ToolBoxTests extends TestSuite {
+	public function __construct(){
+		parent::__construct();
+		
+		$this->addFile('testsuite/UnitTestCase.image.class.php');
+	}
+}
+
+SimpleTest::prefer(new TestOutput());
 
 ?>
 
@@ -195,6 +245,18 @@ ToolBox::get()->Router->exec();
 						<?php echo ToolBox::variable()->applyRuleToValues(function($val){ return $val <= 42; }, array(7, 42, 123)) ? 'yes' : 'no'; ?><br>
 						<?php echo ToolBox::variable()->applyRuleToValues(function($val){ return $val % 2 == 0; }, array(2, 42, 166)) ? 'yes' : 'no'; ?><br>
 						<?php echo ToolBox::variable()->applyRuleToValues(function($val){ return is_bool($val); }, array(true, false, 0)) ? 'yes' : 'no'; ?><br>
+					</td>
+					<td>
+						no error cases
+					</td>
+				</tr>
+				
+				<!-- ToolBoxArray -->
+				<tr>
+					<td>array</td>
+					<td></td>
+					<td>
+						<?php print_r(ToolBox::_array_()->assocToObject(array('a' => 'b', 'c' => 42))); ?>
 					</td>
 					<td>
 						no error cases
