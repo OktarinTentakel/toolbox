@@ -12,12 +12,20 @@ class ToolBox {
 	
 	
 	
-	public static function get(){
-		if( is_null(self::$instance) ){
-			self::$instance = new ToolBox();
+	public static function get($moduleName = null){
+		if( is_null($moduleName) ){
+			if( is_null(self::$instance) ){
+				self::$instance = new ToolBox();
+			}
+			
+			return self::$instance;
+		} else {
+			$staticMethodName = '_'.$moduleName.'_';
+			$constructorArgs = func_get_args();
+			array_shift($constructorArgs);
+			
+			return call_user_func_array(array('self', $staticMethodName), $constructorArgs);
 		}
-		
-		return self::$instance;
 	}
 	// ***
 	
@@ -74,7 +82,7 @@ class ToolBox {
 	//--|MODULE-LOADER----------
 	
 	public static function __callStatic($name, $arguments){
-		return self::get()->getModule($name, $arguments);
+		return self::get()->getModule(trim($name, '_'), $arguments);
 	}
 	
 	
