@@ -8,8 +8,7 @@ set_include_path(
 //--|INCLUDES----------
 
 require_once 'toolbox/ToolBox.class.php';
-require_once 'simpletest/autorun.php';
-require_once 'simpletest/reporter.php';
+require_once 'php/simpletest/autorun.php';
 
 ToolBox::authentication()->registerSingleton(ToolBoxModuleAuthentication::SINGLETON_AUTHENTICATOR);
 ToolBox::routing()->registerSingleton(ToolBoxModuleRouting::SINGLETON_ROUTER);
@@ -28,7 +27,7 @@ if( isset($_GET['authentication-Authenticator-logout']) ){
 	ToolBox::get()->Authenticator->logout();
 }
 
-require_once 'php/test.class.php';
+/*require_once 'php/test.class.php';
 $testObj = new Test();
 ToolBox::get()->Router->addShortRule('', 'Test:[php/test.class.php]/indexFunction/[rs]');
 ToolBox::get()->Router->addShortRule('objecttest/(\d+)/(\w+)', 'Test/objectMethod/a:integer/b/', array('$2', '$1', array('test', 'test')));
@@ -38,53 +37,158 @@ ToolBox::get()->Router->addShortRule('globaltest/(\w+)/(\w+)/(\d+)', ':[php/test
 ToolBox::get()->Router->addShortRule('globaltest/(\w+)', '/print_r/a/');
 ToolBox::get()->Router->addShortRule('mixedgettest/(\w+)/(\w+)', '/mixedGetMethod/a/b/[g]', array('aa', 'bb', '$1', '$2'), $testObj);
 ToolBox::get()->Router->addShortRule(404, 'Test:[php/test.class.php]/fourOfourFunction/[rs]');
-ToolBox::get()->Router->exec();
+ToolBox::get()->Router->exec();*/
 
-class TestOutput extends HtmlReporter {
-	public function __construct(){
-		parent::__construct('utf-8');
+//--|CLASS----------
+
+class ToolBoxTestSuiteOutput extends SimpleReporter {
+	
+	// ***
+	protected $_currentModuleName = '';
+	protected $_currentMethodName = '';
+	// ***
+	
+	
+	
+	//--|HELPERS----------
+	
+	protected function sendNoCacheHeaders() {
+		if (! headers_sent()) {
+			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+			header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
+			header('Cache-Control: no-store, no-cache, must-revalidate');
+			header('Cache-Control: post-check=0, pre-check=0', false);
+			header('Pragma: no-cache');
+		}
 	}
 	
 	
 	
-	public function paintFail($message){
-		parent::paintFail($message);
+	protected function htmlEntities($message) {
+		return htmlentities($message, ENT_COMPAT, 'utf-8');
+	}
+	
+	
+	
+	//--|OUTPUT----------
+	
+	protected function paintEntry($type, $resulttype, $caption, $message){
+		$stepInfo = array_splice($this->getTestList(), 2, 2);
+		
+		if( $stepInfo[0] != $this->_currentModuleName ){
+			echo '
+				<h2>'.$stepInfo[0].'</h2>
+			';
+			
+			$this->_currentModuleName = $stepInfo[0];
+		}
+		
+		if( $stepInfo[1] != $this->_currentMethodName ){
+			echo '
+				<h3>'.$stepInfo[1].'</h3>
+			';
+			
+			$this->_currentMethodName = $stepInfo[1];
+		}
+		
+		echo '
+			<div class="'.$type.'">
+				<span class="'.$type.'">'.$caption.'</span>: '.$this->htmlEntities($message).'
+			</div>
+		';
+	}
+	
+	
+	
+	public function paintHeader($test_name){
+		$this->sendNoCacheHeaders();
+		echo '
+			<!doctype html>
+			<html>
+				<head>
+					<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+					<title>ToolBox Testsuite</title>
+					<link href="css/main.css" type="text/css" rel="Stylesheet">
+				</head>
+				<body>
+					<h1>'.$test_name.'</h1>
+		';
+	}
+	
+	
+	
+	public function paintFooter($test_name){
+		$failed = (($this->getFailCount() + $this->getExceptionCount()) > 0);
+		
+		echo '
+					<div class="summary '.($failed ? 'failed' : '').'">
+						'.$this->getTestCaseProgress().' / '.$this->getTestCaseCount().' test cases complete:
+						<strong>'.$this->getPassCount().'</strong> passes,
+						<strong>'.$this->getFailCount().'</strong> fails,
+						<strong>'.$this->getExceptionCount().'</strong> exceptions
+					</div>
+				</body>
+			</html>
+		';
 	}
 	
 	
 	
 	public function paintPass($message){
 		parent::paintPass($message);
-		echo
-			 '<span class="pass">Pass</span>:'
-			.implode('&nbsp;&gt;&nbsp;', array_splice($this->getTestList(), 3))
-			.'->'.$message
-			.'<br/>'
-		;
+		self::paintEntry('pass', 'pass', 'Pass', $message);
 	}
 	
 	
 	
-	protected function getCss(){
-		return
-			 parent::getCss()
-			.''
-		;
+	public function paintFail($message){
+		parent::paintFail($message);
+		self::paintEntry('fail', 'fail', 'Fail', $message);
 	}
+	
+	
+	
+	public function paintError($message) {
+		parent::paintError($message);
+		self::paintEntry('error', 'fail', 'Exception', $message);
+	}
+	
+	
+	
+	public function paintException($exception) {
+		parent::paintException($exception);
+		$message =
+			'Unexpected exception of type ['.get_class($exception).'] with message ['.$exception->getMessage()
+			.'] in ['.$exception->getFile().' line '.$exception->getLine().']'
+		;
+		self::paintEntry('exception', 'fail', 'Exception', $message);
+	}
+	
+	
+	
+	public function paintSkip($message){
+		parent::paintSkip($message);
+		self::paintEntry('skipped', 'pass', 'Skipped', $message);
+	}
+	
 }
 
-class ToolBoxTests extends TestSuite {
+
+
+//--|CLASS----------
+
+class ToolBoxTestSuite extends TestSuite {
 	public function __construct(){
-		parent::__construct();
-		
-		$this->addFile('testsuite/UnitTestCase.image.class.php');
+		$this->TestSuite('ToolBox Testsuite');
+		$this->collect(dirname(__FILE__).'/testsuite', new SimplePatternCollector('/^.+\/ModuleTestCase\.[a-zA-Z]+\.class\.php$/'));
+		$this->run(new ToolBoxTestSuiteOutput());
+		exit;
 	}
 }
-
-SimpleTest::prefer(new TestOutput());
 
 ?>
 
+<?php /*
 <!doctype html>
 
 <html>
@@ -298,3 +402,5 @@ SimpleTest::prefer(new TestOutput());
 		</table>
 	</body>
 </html>
+
+*/ ?>

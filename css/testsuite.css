@@ -1,0 +1,89 @@
+body > h1 {
+	color: #fff;
+	
+	font-size: 64px;
+	line-height: 1em;
+}
+
+
+
+body > h2,
+body > h3,
+body > div {
+	padding: 5px;
+	border-top: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+	
+	cursor: default;
+}
+
+body > h2 {
+	padding-left: 10px;
+	
+	background-color: #555;
+}
+
+body > h3 {
+	padding-left: 10px;
+	
+	background-color: #444;
+}
+
+body > h2,
+body > h3,
+body > div:hover {
+	color: #fff;
+}
+
+
+
+body > div.pass {
+	border-left: 5px solid #080;
+}
+
+
+
+body > div.fail {
+	border-left: 5px solid #800;
+}
+
+
+
+body > div.error,
+body > div.exception {
+	border-left: 5px solid #ff6a00;
+}
+
+
+
+body > div.skip {
+	border-left: 5px solid #888;
+}
+
+
+
+body > div.summary {
+	border: 1px solid #ccc;
+	border-left: 0px;
+	
+	color: #fff;
+	background-color: #080;
+	
+	text-align: center;
+}
+
+body > div.summary.failed {
+	background-color: #800;
+}
+
+
+
+span.pass {
+	color: #0e0;
+}
+
+
+
+span.fail {
+	color: #e00;
+}

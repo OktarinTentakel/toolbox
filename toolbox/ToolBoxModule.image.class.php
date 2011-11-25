@@ -8,6 +8,16 @@ require_once 'ToolBoxModule.absclass.php';
 
 //--|CLASS----------
 
+/**
+ * ToolBoxModuleImage contains helper methods for dealing with images and image contents.
+ * Normal use cases would be coversion of color values and getting special information about image
+ * contents as well as manipulation.
+ * 
+ * @author Sebastian Schlapkohl
+ * @version 0.25 alpha
+ * @package modules
+ * @subpackage media
+ */
 class ToolBoxModuleImage extends ToolBoxModule {
 	
 	// ***
@@ -18,6 +28,17 @@ class ToolBoxModuleImage extends ToolBoxModule {
 	
 	
 	
+	//--|TOPLEVEL----------
+	
+	/**
+	 * Calculates an array of dominant color-hexvalues by aggregating colors under rounded color codes.
+	 * This method can be used for such things like finding out if an image is particularily bright or dark
+	 * or contains unusual high amounts of yellow.
+	 *
+	 * @param String $image the filesystem path to the image to process
+	 * @throws ToolBoxException if file could not be found or opened
+	 * @return Array list of dominant color values for the given image
+	 */
 	public function getDominantColors($image){
 		if( file_exists($image) ){
 			$size = getimagesize($image);
@@ -84,13 +105,44 @@ class ToolBoxModuleImage extends ToolBoxModule {
 	
 	
 	
-	public function hexColorToDecArray($hexColorString){
-		if( preg_match('/^[0-9a-fA-F]{6}$/', $hexColorString) ){
+	/**
+	 * Reads a standard color hex-string and returns an array of decimal values, representing the given color.
+	 *
+	 * @param String $hexColorString the color to convert as a hex-string with or without leading hash
+	 * @param Float $alpha alpha value between 0.0 and 1.0 to add to the RGB-value to create a RGBA-value, too high or low values will be normalized
+	 * @param Boolean $asCssString determines if the output should be a css-compatible rgba-string instead of an array
+	 * @throws ToolBoxException if hex-string format can not be read
+	 * @return Array decimal representation of the color with 3 values (RGB)
+	 */
+	public function hexColorToDecArray($hexColorString, $alpha = null, $asCssString = false){
+		$matches = array(); 
+		if( preg_match('/^#?([0-9a-fA-F]{6})$/', $hexColorString, $matches) ){
+			$hexColorString = $matches[1];
 			$red = substr($hexColorString, 0, 2);
 			$green = substr($hexColorString, 2, 2);
 			$blue = substr($hexColorString, 4, 2);
 			
-			return array(hexdec($red), hexdec($green), hexdec($blue));
+			$alpha =
+				is_null($alpha)
+				? null
+				: ((floatval($alpha) < 0.0)
+					? 0.0 
+					: ((floatval($alpha) > 1.0)
+						? 1.0 
+						: floatval($alpha)
+					)
+				)
+			;
+			
+			if( is_null($alpha) ){
+				return array(hexdec($red), hexdec($green), hexdec($blue));
+			} else {
+				if( !$asCssString ){
+					return array(hexdec($red), hexdec($green), hexdec($blue), $alpha);
+				} else {
+					return 'rgba('.hexdec($red).', '.hexdec($green).', '.hexdec($blue).', '.$alpha.')';
+				}
+			}
 		} else {
 			$this->throwModuleException(__FUNCTION__.': wrong format, argument no hex-color-string');
 		}
