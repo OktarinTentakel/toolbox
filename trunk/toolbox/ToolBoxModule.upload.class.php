@@ -19,15 +19,15 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 		parent::__construct($moduleName, $addedArgs);
 		
 		$sizeUnit = strtoupper(substr(ini_get('post_max_size'), -1));
-		$unitMultiplier = 
+		$unitMultiplier =
 			($sizeUnit == 'M')
-				? 1048576 
+				? 1048576
 				: 	($sizeUnit == 'K')
-					? 1024 
-					: 	($sizeUnit == 'G') 
-						? 1073741824 
+					? 1024
+					: 	($sizeUnit == 'G')
+						? 1073741824
 						: 1
-		; 
+		;
 		
 		self::$MAX_SIZE = intval(ini_get('post_max_size')) * $unitMultiplier;
 		self::$CONTENT_SIZE = isset($_SERVER['CONTENT_LENGTH']) ? intval($_SERVER['CONTENT_LENGTH']) : null;
@@ -41,25 +41,6 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 			isset($_FILES[$filedataName]['tmp_name'])
 			&& (strlen($_FILES[$filedataName]['tmp_name']) > 0)  
 			&& ($_FILES[$filedataName]['size'] > 0) 
-		);
-	}
-	
-	
-	
-	public function uploadImage(
-		$destinationPath,
-		$filedataName,
-		$maxFileSizeMegabytes = 2,
-		Closure $nameCreationCallback = null,
-		$sanitizeFileName = true
-	){
-		return $this->uploadFile(
-			$destinationPath,
-			$filedataName,
-			array('jpg', 'png', 'gif'),
-			$maxFileSizeMegabytes,
-			$nameCreationCallback,
-			$sanitizeFileName
 		);
 	}
 	
@@ -151,6 +132,25 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 		}
 		
 		return $serverFile;
+	}
+	
+	
+	
+	public function uploadImage(
+		$destinationPath,
+		$filedataName,
+		$maxFileSizeMegabytes = 2,
+		Closure $nameCreationCallback = null,
+		$sanitizeFileName = true
+	){
+		return $this->uploadFile(
+		$destinationPath,
+		$filedataName,
+		array('jpg', 'png', 'gif'),
+		$maxFileSizeMegabytes,
+		$nameCreationCallback,
+		$sanitizeFileName
+		);
 	}
 	
 	

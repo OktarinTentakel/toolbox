@@ -36,7 +36,7 @@ class ToolBoxModuleImage extends ToolBoxModule {
 	 * or contains unusual high amounts of yellow.
 	 *
 	 * @param String $image the filesystem path to the image to process
-	 * @throws ToolBoxException if file could not be found or opened
+	 * @throws Exception if file could not be found or opened
 	 * @return Array list of dominant color values for the given image
 	 */
 	public function getDominantColors($image){
@@ -111,7 +111,7 @@ class ToolBoxModuleImage extends ToolBoxModule {
 	 * @param String $hexColorString the color to convert as a hex-string with or without leading hash
 	 * @param Float $alpha alpha value between 0.0 and 1.0 to add to the RGB-value to create a RGBA-value, too high or low values will be normalized
 	 * @param Boolean $asCssString determines if the output should be a css-compatible rgba-string instead of an array
-	 * @throws ToolBoxException if hex-string format can not be read
+	 * @throws Exception if hex-string format can not be read
 	 * @return Array decimal representation of the color with 3 values (RGB)
 	 */
 	public function hexColorToDecArray($hexColorString, $alpha = null, $asCssString = false){

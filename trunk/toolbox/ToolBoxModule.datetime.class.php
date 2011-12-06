@@ -31,40 +31,65 @@ class ToolBoxModuleDatetime extends ToolBoxModule {
 	//--|TOPLEVEL----------
 	
 	/**
-	 * Converts a date string in a standard time format to a ISO-date-string.
+	 * Converts a date string in a standard time format to an Standard-date-string.
+	 * The default output is the simple ISO-format (2011-01-31).
 	 * The string may be any PHP-parsable datetime-string.
 	 * 
 	 * @param String $dateString the date-string to convert
-	 * @return String to ISO-formatted date-string
+	 * @param String $specialParseFormat optinonal special format to use for parsing, use DateTime-constants if possible
+	 * @param String $outputFormat optinonal special format to use for parsing, use DateTime-constants if possible
+	 * @return String formatted date-string
 	 */
-	public function miscToIsoDate($dateString){
-		return ($dateString != '') ? date('Y-m-d', strtotime($dateString)) : '';
+	public function miscToStandardDate($dateString, $specialParseFormat = null, $outputFormat = 'Y-m-d'){
+		if( is_null($specialParseFormat) ){
+			$time = strtotime(''.$dateString);
+			return $time ? date(''.$outputFormat, $time) : '';
+		} else {
+			$dateTime = DateTime::createFromFormat($specialParseFormat, ''.$dateString);
+			return $dateTime ? $dateTime->format(''.$outputFormat) : '';
+		}
 	}
 	
 	
 	
 	/**
-	 * Converts a time string in a standard time format to a ISO-time-string.
+	 * Converts a time string in a standard time format to an Standard-time-string.
+	 * The default output is the simple ISO-format (16:01:02).
 	 * The string may be any PHP-parsable datetime-string.
 	 *
 	 * @param String $timeString the time-string to convert
-	 * @return String to ISO-formatted time-string
+	 * @param String $specialParseFormat optinonal special format to use for parsing, use DateTime-constants if possible
+	 * @return String formatted time-string
 	 */
-	public function miscToIsoTime($timeString){
-		return ($timeString != '') ? date('H:i:s', strtotime($timeString)) : '';
+	public function miscToStandardTime($timeString, $specialParseFormat = null, $outputFormat = 'H:i:s'){
+		if( is_null($specialParseFormat) ){
+			$time = strtotime(''.$timeString);
+			return $time ? date(''.$outputFormat, $time) : '';
+		} else {
+			$dateTime = DateTime::createFromFormat($specialParseFormat, ''.$timeString);
+			return $dateTime ? $dateTime->format(''.$outputFormat) : '';
+		}
 	}
 	
 	
 	
 	/**
-	 * Converts a datetime string in a standard datetime format to a ISO-datetime-string.
+	 * Converts a datetime string in a standard datetime format to an Standard-datetime-string.
+	 * The default output is the simple ISO-format (2011-01-31 16:01:02).
 	 * The string may be any PHP-parsable datetime-string.
 	 *
 	 * @param String $dateTimeString the datetime-string to convert
-	 * @return String to ISO-formatted datetime-string
+	 * @param String $specialParseFormat optinonal special format to use for parsing, use DateTime-constants if possible
+	 * @return String formatted datetime-string
 	 */
-	public function miscToIsoDateTime($dateTimeString){
-		return ($dateTimeString != '') ? date('Y-m-d H:i:s', strtotime($dateTimeString)) : '';
+	public function miscToStandardDateTime($dateTimeString, $specialParseFormat = null, $outputFormat = 'Y-m-d H:i:s'){
+		if( is_null($specialParseFormat) ){
+			$time = strtotime(''.$dateTimeString);
+			return $time ? date(''.$outputFormat, $time) : '';
+		} else {
+			$dateTime = DateTime::createFromFormat($specialParseFormat, ''.$dateTimeString);
+			return $dateTime ? $dateTime->format(''.$outputFormat) : '';
+		}
 	}
 	
 }
