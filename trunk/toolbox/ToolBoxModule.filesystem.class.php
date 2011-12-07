@@ -38,13 +38,17 @@ class ToolBoxModuleFileSystem extends ToolBoxModule {
 	 * @throws Exception if directory doesn't exits, is not readable or is actually no directory
 	 * @return Boolean true / false
 	 */
-	public function isEmptyDirectory($dir){
+	public function isEmptyDirectory($dir, $ignoreHidden = true){
 		if( is_dir($dir) && is_readable($dir) ){
 			$count = 0;
 			$files = opendir($dir);
 			
 			while( $file=readdir($files) ){
 				$count++;
+				if( $ignoreHidden && !in_array($file, array('.', '..')) && (strncmp($file, '.', 1) == 0) ){
+					$count--;
+				}
+				
 				if( $count > 2 ){
 					return false;
 				}
@@ -66,14 +70,14 @@ class ToolBoxModuleFileSystem extends ToolBoxModule {
 	 * @throws Exception if directory doesn't exits, is not readable or is actually no directory
 	 * @return uint amount of files in the directory
 	 */
-	public function countDirectoryFiles($dir){
+	public function countDirectoryFiles($dir, $ignoreHidden = true){
 		if( is_dir($dir) && is_readable($dir) ){
 			$dir = str_replace('//', '/', $dir.'/');
 			$count = 0;
 			$files = opendir($dir);
 			
 			while( $file=readdir($files) ){
-				if( !is_dir($dir.$file) && (strncmp($file, '.', 1) != 0) ){
+				if( !is_dir($dir.$file) && (!$ignoreHidden || ($ignoreHidden && (strncmp($file, '.', 1) != 0))) ){
 					$count++;
 				}
 			}

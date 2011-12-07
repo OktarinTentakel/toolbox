@@ -36,7 +36,7 @@ class ToolBoxModuleValidation extends ToolBoxModule {
 	 * @param Boolean $signed defines if the expected value is signed or unsigned
 	 * @return Boolean true/false
 	 */
-	public function isInt($value, $signed = true){
+	public function isInteger($value, $signed = true){
 		return preg_match("/^".($signed ? '\-?' : '')."[1-9][0-9]*$/", $value);
 	}
 	
@@ -48,10 +48,11 @@ class ToolBoxModuleValidation extends ToolBoxModule {
 	 * standard is_bool.
 	 * 
 	 * @param * $value the value to check, must be string-castable
+	 * @param Boolean $stringValues defines if boolean values are also accepted as strings
 	 * @return Boolean true/false
 	 */
-	public function isBoolean($value){
-		return (is_bool($value) || in_array($value, array('true', 'false')));
+	public function isBoolean($value, $stringValues = false){
+		return (is_bool($value) || ($stringValues && in_array($value, array('true', 'false'))));
 	}
 	
 	
@@ -60,10 +61,11 @@ class ToolBoxModuleValidation extends ToolBoxModule {
 	 * Checks if the given value can be represents a valid URL.
 	 * 
 	 * @param * $value the value to check, must be string-castable
+	 * @param Boolean $needsProtocol defines if an access-protocol has to be part of the URL
 	 * @return Boolean true/false
 	 */
-	public function isUrl($value){
-		$urlregex = "^(https?|ftp)\:\/\/";
+	public function isUrl($value, $needsProtocol = true){
+		$urlregex = $needsProtocol ? "^(https?|ftp)\:\/\/" : "^((https?|ftp)\:\/\/)?";
 		$urlregex .= "([a-z0-9+!*(),;?&=\$_.-]+(\:[a-z0-9+!*(),;?&=\$_.-]+)?@)?";
 
 		//$urlregex .= "[a-z0-9+\$_-]+(\.[a-z0-9+\$_-]+)*";  // http://x = allowed (ex. http://localhost, http://routerlogin)

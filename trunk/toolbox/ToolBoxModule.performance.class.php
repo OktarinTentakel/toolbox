@@ -8,12 +8,23 @@ require_once 'ToolBoxModule.absclass.php';
 
 //--|CLASS----------
 
+/**
+ * ToolBoxModulePerformance contains methods for managing performace issues and to apply
+ * standard solutions for speeding up processes and relieving the server of stress.
+ *
+ * @author Sebastian Schlapkohl
+ * @version 0.25 alpha
+ * @package modules
+ * @subpackage procedures
+ */
 class ToolBoxModulePerformance extends ToolBoxModule {
 	
 	const SINGLETON_SIMPLEFILEOUTPUTCACHE = 'SimpleFileOutputCache';
 	const SINGLETON_SIMPLEAPCOUTPUTCACHE = 'SimpleApcOutputCache';
 	public static $SINGLETON_CLASSES = array(self::SINGLETON_SIMPLEFILEOUTPUTCACHE, self::SINGLETON_SIMPLEAPCOUTPUTCACHE);
 
+	
+	
 	// ***
 	public function __construct($moduleName, $addedArgs){
 		parent::__construct($moduleName, $addedArgs);
@@ -25,6 +36,22 @@ class ToolBoxModulePerformance extends ToolBoxModule {
 
 //--|NESTED-BASECLASS-[SimpleOutputCache]----------
 
+/**
+ * SimpleOutputCache is an abstract implementation of an output cache to store random
+ * byte-data in the cache under a specific and identifiable id.
+ * 
+ * The standard procedure for using a cache implementation is as follows:
+ * - test for hasCached()
+ * - if not cache(content)
+ * - if so display()
+ * The id under which to save the content is automatically generated from the current URI + request + post-data
+ * and therefore automatically identifiable.
+ * 
+ * @author Sebastian Schlapkohl
+ * @version 0.25 alpha
+ * @package singletons
+ * @subpackage procedures
+ */
 abstract class SimpleOutputCache extends ToolBoxModuleSingleton {
 
 	// ***
@@ -41,6 +68,11 @@ abstract class SimpleOutputCache extends ToolBoxModuleSingleton {
 	
 	//--|GETTER----------
 	
+	/**
+	 * Returns the current data-context hashed to add to the URL as a status identifier.
+	 * 
+	 * @return String the hashed current request context
+	 */
 	protected function getContext(){
 		return md5(print_r($_POST, true));
 	}
@@ -49,22 +81,58 @@ abstract class SimpleOutputCache extends ToolBoxModuleSingleton {
 	
 	//--|FUNCTIONALITY----------
 	
+	/**
+	 * Caches the given content at the currently calculated id.
+	 * 
+	 * @param String $content the content-string to cache.
+	 */
 	abstract public function cache($content);
 	
+	
+	
+	/**
+	 * Outputs the content identified by the currently calculated id if present.
+	 * The output is html by default, but may be overwritten.
+	 * 
+	 * @param String $content overwrite content to use instead of the cache-value, could also be used as fallback by implementations
+	 * @param String $typeOverwrite a mime-type to use instead of html
+	 */
 	abstract public function display($content = null, $typeOverwrite = 'html');
 	
+	
+	
+	/**
+	 * Disables the cache, no matter what further method calls are fired.
+	 */
 	public function disable(){
 		$this->disabled = true;
 	}
 	
+	
+	
+	/**
+	 * Flushes the cache, effectively deleting all cached content.
+	 */
 	abstract public function flush();
 	
 	
 	
 	//--|QUESTIONS----------
 	
+	/**
+	 * Returns if cache data exists under the currently calculated id.
+	 * 
+	 * @return Boolean true/false
+	 */
 	abstract public function hasCached();
 	
+	
+	
+	/**
+	 * Returns if the cache is enabled at the moment.
+	 * 
+	 * @return Boolean true/false
+	 */
 	public function isEnabled(){
 		return !$this->disabled;
 	}
@@ -75,7 +143,17 @@ abstract class SimpleOutputCache extends ToolBoxModuleSingleton {
 
 //--|NESTED-SINGLETON-[SimpleFileOutputCache]----------
 
+/**
+ * A file-based implementation of an output cache.
+ * Saves the contents in separate files for each context.
+ * 
+ * @author Sebastian Schlapkohl
+ * @version 0.25 alpha
+ * @package singletons
+ * @subpackage procedures
+ */
 class SimpleFileOutputCache extends SimpleOutputCache {
+	
 	const CACHE_DIR = 'CACHE_DIR';
 	const FILE_SUFFIX = 'FILE_SUFFIX';
 	const DEFAULT_FILE_SUFFIX = '.tmp';
