@@ -55,14 +55,15 @@ class ToolBoxModulePerformance extends ToolBoxModule {
 abstract class SimpleOutputCache extends ToolBoxModuleSingleton {
 
 	// ***
+	protected $uriId = '';
 	protected $requestId = '';
 	protected $disabled = false;
 	
 	protected function __construct(Array $args = null){
 		parent::__construct($args);
 		
-		$uriId = substr(str_replace('/', '-', $_SERVER['REQUEST_URI']), 1);
-		$this->requestId = (($uriId != '') ? $uriId : '_INDEX_').'-'.$this->getContext();
+		$this->uriId = substr(str_replace('/', '-', $_SERVER['REQUEST_URI']), 1);
+		$this->requestId = (($uriId != '') ? $this->uriId : '_INDEX_').'-'.$this->getContext();
 	}
 	// ***
 	
@@ -146,6 +147,7 @@ abstract class SimpleOutputCache extends ToolBoxModuleSingleton {
 /**
  * A file-based implementation of an output cache.
  * Saves the contents in separate files for each context.
+ * To reduce probable conflicts with maximum file count per directory, each defined URL gets it's own subdir.
  * 
  * @author Sebastian Schlapkohl
  * @version 0.25 alpha
@@ -163,6 +165,7 @@ class SimpleFileOutputCache extends SimpleOutputCache {
 	// ***
 	public static $instance = null;
 	
+	private $baseCacheDir = '';
 	private $cacheDir = '';
 	private $fileSuffix = '';
 	
@@ -174,6 +177,19 @@ class SimpleFileOutputCache extends SimpleOutputCache {
 			
 			if( $this->cacheDir[strlen($this->cacheDir)-1] != '/' ){
 				$this->cacheDir .= '/';
+				$this->baseCacheDir = $this->cacheDir;
+			}
+			
+			if( is_dir($this->cacheDir) && is_readable($this->cacheDir) ){
+				$this->cacheDir .= $this->uriId.'/';
+				
+				if( !file_exists($this->cacheDir) ){
+					if( !mkdir($this->cacheDir) ){
+						$this->throwMissingSingletonRessourceException($this->cacheDir.' not accessible');
+					}
+				}
+			} else {
+				$this->throwMissingSingletonRessourceException($this->cacheDir.' not accessible');
 			}
 		} else {
 			$this->throwMissingSingletonDataException(self::CACHE_DIR);
@@ -191,6 +207,13 @@ class SimpleFileOutputCache extends SimpleOutputCache {
 	
 	//--|FUNCTIONALITY----------
 	
+	/**
+	 * Caches the given content into a byte-file in the current cache-dir.
+	 * Does nothing if cache is disabled.
+	 * 
+	 * @see SimpleOutputCache::cache()
+	 * @param String $content the content to cache for the current context
+	 */
 	public function cache($content){
 		if( !$this->disabled ){
 			file_put_contents($this->cacheDir.$this->requestId.$this->fileSuffix, $content);
@@ -199,6 +222,15 @@ class SimpleFileOutputCache extends SimpleOutputCache {
 	
 	
 	
+	/**
+	 * Displays the content of a cached file for the current context.
+	 * Doesn't do anything if cache is disabled, except for the case when a content overwrite is
+	 * defined since this is normally used for debugging cases.
+	 * 
+	 * @see SimpleOutputCache::display()
+	 * @param String $content overwrite content to display instead of the actual content
+	 * @param String $typeOverwrite mime-type overwrite to instead of the default "html"
+	 */
 	public function display($content = null, $typeOverwrite = 'html'){
 		if( is_null($content) ){
 			if( !$this->disabled ){
@@ -218,14 +250,26 @@ class SimpleFileOutputCache extends SimpleOutputCache {
 	
 	
 	
+	/**
+	 * Removes all cache files and therefore effectively empties the whole thing. 
+	 * 
+	 * @see SimpleOutputCache::flush()
+	 * @return unit the number of removed entries
+	 */
 	public function flush(){
 		$fileCount = 0;
 		
-		if( $handle = opendir($this->cacheDir) ){
+		if( $handle = opendir($this->baseCacheDir) ){
 			while( ($cacheFile = readdir($handle)) !== false ){
-				if( ($cacheFile != '.') && ($cacheFile != '..') ){
-					$fileCount++;
-					@unlink($this->cacheDir.$cacheFile);
+				if( is_dir($cacheFile) && is_readable($cacheFile) && ($subHandle = opendir($this->baseCacheDir.$cacheFile.'/')) ){
+					while( ($subCacheFile = readdir($subHandle)) !== false ){
+						if( ($subCacheFile != '.') && ($subCacheFile != '..') ){
+							$fileCount++;
+							@unlink($this->baseCacheDir.$cacheFile.'/'.$subCacheFile);
+						}
+					}
+					
+					closedir($subHandle);
 				}
 			}
 			
@@ -239,6 +283,14 @@ class SimpleFileOutputCache extends SimpleOutputCache {
 	
 	//--|QUESTIONS----------
 	
+	/**
+	 * Returns if the current context is already cached.
+	 * Depends on existent subdir and file.
+	 * If cache is disabled, this method will always return false
+	 * 
+	 * @see SimpleOutputCache::hasCached()
+	 * @return Boolean true/false
+	 */
 	public function hasCached(){
 		return !$this->disabled ? is_readable($this->cacheDir.$this->requestId.$this->fileSuffix) : false;
 	}
@@ -249,7 +301,19 @@ class SimpleFileOutputCache extends SimpleOutputCache {
 
 //--|NESTED-SINGLETON-[SimpleApcOutputCache]----------
 
+/**
+ * An apc-based implementation of an output cache.
+ * Saves the contents in user-cache entries.
+ * Adds the concept of prefixes for the entry-names to be able of differntiate different sites and
+ * datatypes in the shared cache space.
+ *
+ * @author Sebastian Schlapkohl
+ * @version 0.25 alpha
+ * @package singletons
+ * @subpackage procedures
+ */
 class SimpleApcOutputCache extends SimpleOutputCache {
+	
 	const VAR_PREFIX = 'VAR_PREFIX';
 	const DEFAULT_VAR_PREFIX = '';
 	
@@ -283,6 +347,13 @@ class SimpleApcOutputCache extends SimpleOutputCache {
 	
 	//--|FUNCTIONALITY----------
 	
+	/**
+	 * Caches the given content into a user-cache-entry.
+	 * Does nothing if cache is disabled.
+	 *
+	 * @see SimpleOutputCache::cache()
+	 * @param String $content the content to cache for the current context
+	 */
 	public function cache($content){
 		if( !$this->disabled ){
 			apc_store($this->varPrefix.$this->requestId, $content);
@@ -291,6 +362,15 @@ class SimpleApcOutputCache extends SimpleOutputCache {
 	
 	
 	
+	/**
+	 * Displays the content of a user-cache entry for the current context.
+	 * Doesn't do anything if cache is disabled, except for the case when a content overwrite is
+	 * defined since this is normally used for debugging cases.
+	 *
+	 * @see SimpleOutputCache::display()
+	 * @param String $content overwrite content to display instead of the actual content
+	 * @param String $typeOverwrite mime-type overwrite to instead of the default "html"
+	 */
 	public function display($content = null, $typeOverwrite = 'html'){
 		if( is_null($content) ){
 			if( !$this->disabled ){
@@ -310,17 +390,48 @@ class SimpleApcOutputCache extends SimpleOutputCache {
 	
 	
 	
-	public function flush(){
-		$cacheInfo = apc_cache_info('user', true);
-		apc_clear_cache('user');
-		
-		return $cacheInfo['num_entries'];
+	/**
+	 * Removes all user-cache-entries and therefore effectively empties the whole user cache.
+	 * This implementation does not yet use the APCIterator, since the status of the class doesn't seem
+	 * to be stable yet and might be unavailable, even with a recent APC-version.
+	 *
+	 * @see SimpleOutputCache::flush()
+	 * @param String $varPrefix a prefix to consider while flushing, if set, only entries having the prefix will be deleted
+	 * @return unit the number of removed entries
+	 */
+	public function flush($varPrefix = null){
+		if( is_null($varPrefix) ){
+			$cacheInfo = apc_cache_info('user', true);
+			apc_clear_cache('user');
+			
+			return $cacheInfo['num_entries'];
+		} else {
+			$cacheInfo = apc_cache_info('user', true);
+			$deletedCount = 0;
+			
+			foreach($cacheInfo['cache_list'] as $cacheEntry){
+				if( strpos($cacheEntry['info'], $varPrefix) === 0 ){
+					apc_delete($cacheEntry['info']);
+					$deletedCount++;
+				}
+			}
+			
+			return $deletedCount;
+		}
 	}
 	
 	
 	
 	//--|QUESTIONS----------
 	
+	/**
+	 * Returns if the current context is already cached.
+	 * Depends on existent user-cache-entry.
+	 * If cache is disabled, this method will always return false
+	 *
+	 * @see SimpleOutputCache::hasCached()
+	 * @return Boolean true/false
+	 */
 	public function hasCached(){
 		return !$this->disabled ? apc_exists($this->varPrefix.$this->requestId) : false;
 	}

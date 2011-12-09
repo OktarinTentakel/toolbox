@@ -2,6 +2,17 @@
 
 //--|CLASS----------
 
+/**
+ * ToolBoxModule is the core carrier of the ToolBox functionality.
+ * Each module encapsulates everything concerning a certain standard topic of development.
+ * Simple helpers and everyday methods are found on the toplevel, while specific and complex
+ * functionality are put into individually deployable singletons, which can be activated as needed.
+ *
+ * @author Sebastian Schlapkohl
+ * @version 0.25 alpha
+ * @package basic
+ * @subpackage skeleton
+ */
 abstract class ToolBoxModule {
 
 	// ***
