@@ -19,10 +19,12 @@ require_once 'ToolBoxModuleSingleton.absclass.php';
  * @subpackage procedures
  */
 class ToolBoxModuleAuthentication extends ToolBoxModule {
+	
 	const DEFAULT_SESSION_NAME = 'ToolBoxAuthenticationSession';
 	
 	const SINGLETON_AUTHENTICATOR = 'Authenticator';
 	public static $SINGLETON_CLASSES = array(self::SINGLETON_AUTHENTICATOR);
+	
 	
 	
 	// ***
@@ -48,6 +50,8 @@ class ToolBoxModuleAuthentication extends ToolBoxModule {
 class Authenticator extends ToolBoxModuleSingleton {
 
 	const ARGUMENT_SESSION_NAME = 'SESSION_NAME';
+	
+	
 	
 	// ***
 	public static $instance = null;

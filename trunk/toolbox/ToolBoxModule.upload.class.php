@@ -8,12 +8,25 @@ require_once 'ToolBoxModule.absclass.php';
 
 //--|CLASS----------
 
+/**
+ * ToolBoxModuleUpload offers simplified functions for dealing with uploads
+ * and integrating client files into a server context.
+ * 
+ * The toplevel functions of this module should be all that is needed for managing standard upload tasks.
+ *
+ * @author Sebastian Schlapkohl
+ * @version 0.25 alpha
+ * @package modules
+ * @subpackage procedures
+ */
 class ToolBoxModuleUpload extends ToolBoxModule {
 	
 	const MAX_FILENAME_LENGTH = 260;
 	public static $MAX_SIZE;
 	public static $CONTENT_SIZE;
 
+	
+	
 	// ***
 	public function __construct($moduleName, $addedArgs){
 		parent::__construct($moduleName, $addedArgs);
@@ -36,6 +49,15 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 	
 	
 	
+	//--|TOPLEVEL----------
+	
+	/**
+	 * Checks if a file under a certain data name is available in PHPs stack
+	 * for uploaded files.
+	 * 
+	 * @param String $filedataName the filedata name to check for
+	 * @return Boolean true/false
+	 */
 	public function uploadedFileExists($filedataName){
 		return(
 			isset($_FILES[$filedataName]['tmp_name'])
@@ -46,6 +68,19 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 	
 	
 	
+	/**
+	 * Integrates a file from PHPs uploaded files stack into a destination path,
+	 * while checking for technical correctness and applying name rules.
+	 * 
+	 * @param String $destinationPath the local directory to move the uploaded file to
+	 * @param String $filedataName the filedata name of the uploaded file
+	 * @param Array $whitelist an array of strings containing allowed file endings
+	 * @param uint $maxFileSizeMegabytes maximum allowed megabytes for the uploaded file
+	 * @param Closure $nameCreationCallback a function to adapt the filename according to a certain algorithm, this function takes the old name as a parameter
+	 * @param Boolean $sanitizeFileName defines if the filename should be roughly sanitized be removing incompatible characters and transforming others
+	 * @throws Exception on technical issues and validation (POST exceeded, no upload found, missing upload filename, invalid extension, invalid filename, file already present, missing rights)
+	 * @return Array information about the uploaded file having the following format: array('location' => '/abc/file.file', 'filename' => 'file.file')
+	 */
 	public function uploadFile(
 		$destinationPath,
 		$filedataName,
@@ -136,6 +171,17 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 	
 	
 	
+	/**
+	 * Standard method for integrating image files based on uploadFile.
+	 * 
+	 * @param String $destinationPath the local directory to move the uploaded file to
+	 * @param String $filedataName the filedata name of the uploaded file
+	 * @param uint $maxFileSizeMegabytes maximum allowed megabytes for the uploaded file
+	 * @param Closure $nameCreationCallback a function to adapt the filename according to a certain algorithm, this function takes the old name as a parameter
+	 * @param Boolean $sanitizeFileName defines if the filename should be roughly sanitized be removing incompatible characters and transforming others
+	 * @throws Exception on technical issues and validation (POST exceeded, no upload found, missing upload filename, invalid extension, invalid filename, file already present, missing rights)
+	 * @return Array information about the uploaded file having the following format: array('location' => '/abc/file.file', 'filename' => 'file.file')
+	 */
 	public function uploadImage(
 		$destinationPath,
 		$filedataName,
@@ -155,6 +201,13 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 	
 	
 	
+	/**
+	 * Removes all generally unwanted characters from filenames and replaces some
+	 * easily replaceable characters like umlauts and characters with french accents.
+	 * 
+	 * @param String $fileName the filename to sanitize
+	 * @param String $extensionToIgnore defines an extension to ignore while sanitizing
+	 */
 	public function sanitizeFilename($fileName, $extensionToIgnore = null){
 		$usesUnicode = ($fileName == utf8_encode($fileName));
 		

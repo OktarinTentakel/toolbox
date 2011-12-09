@@ -8,6 +8,16 @@ require_once 'ToolBoxModule.absclass.php';
 
 //--|CLASS----------
 
+/**
+ * ToolBoxModuleVariable is about dealing with values and expectations of the values of any variable.
+ * This module is not so much about validation of values, but more about technical configuration of
+ * a variable in the runtime context.
+ *
+ * @author Sebastian Schlapkohl
+ * @version 0.25 alpha
+ * @package modules
+ * @subpackage datatypes
+ */
 class ToolBoxModuleVariable extends ToolBoxModule {
 
 	// ***

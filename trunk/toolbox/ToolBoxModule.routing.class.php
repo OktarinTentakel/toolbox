@@ -22,7 +22,17 @@ require_once 'ToolBoxModuleSingleton.absclass.php';
 
 //--|CLASS----------
 
+/**
+ * ToolBoxModuleRouting contains methods and tools for dealing with URL-management and binding
+ * request-configurations to application contexts.
+ *
+ * @author Sebastian Schlapkohl
+ * @version 0.25 alpha
+ * @package modules
+ * @subpackage procedures
+ */
 class ToolBoxModuleRouting extends ToolBoxModule {
+	
 	const SINGLETON_ROUTER = 'Router';
 	public static $SINGLETON_CLASSES = array(self::SINGLETON_ROUTER);
 	
@@ -35,6 +45,14 @@ class ToolBoxModuleRouting extends ToolBoxModule {
 	
 	
 	
+	//--|TOPLEVEL----------
+	
+	/**
+	 * Redirects to a given URL and stops any further processing of the current script.
+	 * 
+	 * @param String $url the URL to redirect to
+	 * @param Boolean $noCache tells the browser if the cache should be ignored for the redirect
+	 */
 	public function redirect($url, $noCache = false){
 		if( $noCache ){
 			header('Location: '.$url, true, 302);
@@ -51,6 +69,47 @@ class ToolBoxModuleRouting extends ToolBoxModule {
 
 //--|NESTED-SINGLETON-[Router]----------
 
+/**
+ * Router is an apache-mod_rewrite-based URL-router, which
+ * parses the current URL (path without domain) with regular expressions and routes according to
+ * the format to defined end points in the script.
+ * 
+ * These are some examples for the router usage with explanations:
+ * 
+ * # on no path -> require_once [r] on test.class.php, call indexFunction statically [s] on class test
+ * ToolBox::get()->Router->addShortRule('', 'Test:[php/test.class.php]/indexFunction/[rs]');
+ * 
+ * # on /objecttest/123/abc -> instantiate a Test-object and call objectMethod on it, providing two parameters from the URL
+ * # In this case the parameters are partly casted and expanded upon. The last array defines order and can add further params, not coming from the URL
+ * ToolBox::get()->Router->addShortRule('objecttest/(\d+)/(\w+)', 'Test/objectMethod/a:integer/b/', array('$2', '$1', array('test', 'test')));
+ * 
+ * # on /objecttest2/123/abc -> take the present object $testObject and call objectMethod on it, providing two parameters from the URL and nothing else
+ * ToolBox::get()->Router->addShortRule('objecttest2/(\d+)/(\w+)', '/objectMethod/a:integer/b/', null, $testObj);
+ * 
+ * # on /statictest/abc/123  -> statically [s] call staticFunction on class Test and provide two parameters from the URL and nothing else
+ * ToolBox::get()->Router->addShortRule('statictest/(\w+)/(\d+)', 'Test/staticFunction/a/b:integer/[s]');
+ * 
+ * # on /globaltest/abc/123/def -> require_once [r] test.class.php and globally call the funtion globalFunction and provide three parameters from the URL
+ * ToolBox::get()->Router->addShortRule('globaltest/(\w+)/(\w+)/(\d+)', ':[php/test.class.php]/globalFunction/a/b/c:integer/[r]');
+ * 
+ * # on /globaltest/abc -> call print_r with the parameter from the URL
+ * ToolBox::get()->Router->addShortRule('globaltest/(\w+)', '/print_r/a/');
+ * 
+ * # on /mixedGetMethod/abc/def -> call mixedGetMethod on present object $testObj with two parameters not from the URL and two parameters
+ * # from the URL not used a parameters, but set as GET-parameters [g] before calling the method
+ * ToolBox::get()->Router->addShortRule('mixedgettest/(\w+)/(\w+)', '/mixedGetMethod/a/b/[g]', array('aa', 'bb', '$1', '$2'), $testObj);
+ * 
+ * # on no rule applying -> require_once test.class.php [r] and call statically [s] call fourOfourFunction on class Test 
+ * ToolBox::get()->Router->addShortRule(404, 'Test:[php/test.class.php]/fourOfourFunction/[rs]');
+ * 
+ * # parse URL and try to apply a rule to it
+ * ToolBox::get()->Router->exec();
+ *
+ * @author Sebastian Schlapkohl
+ * @version 0.25 alpha
+ * @package singletons
+ * @subpackage procedures
+ */
 class Router extends ToolBoxModuleSingleton {
 
 	// ***
@@ -81,6 +140,14 @@ class Router extends ToolBoxModuleSingleton {
 	
 	//--|FUNCTIONALITY----------
 	
+	/**
+	 * Masks a string for use in regular expression, to remove implicit meanings of
+	 * special regex-characters.
+	 * 
+	 * @param String $string the string to mask
+	 * @param Boolean $onlySlashes defines if only slashes should be masked and special characters should be left intact
+	 * @return String the masked string
+	 */
 	private function escapeStringForRegExp($string, $onlySlashes = false){
 		if( !$onlySlashes ){
 			$string = preg_quote($string);
@@ -91,6 +158,12 @@ class Router extends ToolBoxModuleSingleton {
 	
 	
 	
+	/**
+	 * Validates the string format of a short-rule-string.
+	 * 
+	 * @param String $shortRule the short-rule-string to check
+	 * @return Boolean true/false
+	 */
 	private function checkShortSyntax($shortRule){
 		return preg_match(
 			'/^(([A-Z][a-zA-Z0-9]+)?(\:\[.+\])?)?\/.+(\/.+(\:.+)?)*\/(\[[rsg]+\])?$/',
@@ -100,12 +173,30 @@ class Router extends ToolBoxModuleSingleton {
 	
 	
 	
+	/**
+	 * Throws a standard Exception for a syntax error in a short-rule-string.
+	 * 
+	 * @throws Exception
+	 */
 	private function throwShortSyntaxErrorException(){
 		throw new Exception('ToolBoxException | shortrule-syntax-error');
 	}
 	
 	
 	
+	/**
+	 * Adds a rule to the ruleset.
+	 * 
+	 * @param String $regExp the regexp to match against the current URL-path
+	 * @param String $functionName function name to call on a match
+	 * @param Array $functionArguments function arguments to call the function with
+	 * @param String $className the name of the class to call the function statically on or to instantiate an object of to call the method on
+	 * @param String $include a string to use as a include value before the execution, to dynamically include code on rule execution
+	 * @param Object $targetObject an already existent object to call the method above on
+	 * @param Boolean $useRequireOnce defines if require_once should be used instead of include in case of a dynamic include
+	 * @param Boolean $callStatic defines if the function should be called statically on the class instead on an object
+	 * @param Boolean $createArgsAsGet defines if named parameters to the method should be transformed into get-parameters
+	 */
 	public function addRule(
 		$regExp,
 		$functionName,
@@ -138,12 +229,21 @@ class Router extends ToolBoxModuleSingleton {
 	
 	
 	/**
-	 * Syntax:
-	 * Class:[includestring]/method/arg1:type/arg2:type/.../[rs]
+	 * Adds a new rule to the ruleset, by using a special short syntax to circumvent
+	 * the parameter-heavy call of addRule.
+	 * 
+	 * rough syntax:
+	 * Class:[includestring]/method/arg1:type/arg2:type/.../[rsg]
 	 * /method/arg/ 
 	 * 
-	 * for argumentMap (if not set only url-args in that order):
+	 * for argumentMap (if not set only url-args in that order, dollar marks URL-params):
 	 * array('asd', 11, '$1', 'ddd', '$2')
+	 * 
+	 * @param String $regExp the regexp to match against the current URL-path
+	 * @param String $shortRule the short-rule-string to parse to a call rule
+	 * @param Array $argumentMap list of parameters to call the function with, including URL-param-placeholders
+	 * @param Object $targetObject an existing object to call the method on, instead of calling it statically or on a new object
+	 * @throws Exception on invalid short-syntax
 	 */
 	public function addShortRule($regExp, $shortRule, Array $argumentMap = null, &$targetObject = null){
 		if( $this->checkShortSyntax($shortRule) ){
@@ -216,6 +316,9 @@ class Router extends ToolBoxModuleSingleton {
 	
 	
 	
+	/**
+	 * Executes the router's rule stack. And executes the first rule that applies.
+	 */
 	public function exec(){
 		$fourOfour = true;
 		
@@ -234,6 +337,12 @@ class Router extends ToolBoxModuleSingleton {
 	
 	
 	
+	/**
+	 * Executes a rule, by calling the set method in the specified way.
+	 * 
+	 * @param StdClass $rule the rule object to execute
+	 * @param array $argHits the parsed parameter value hits from the preg_match-call on the URL
+	 */
 	private function executeRule(StdClass $rule, Array $argHits = null){
 		if( !is_null($rule->include) ){
 			if( !$rule->require ){
