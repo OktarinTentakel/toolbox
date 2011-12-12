@@ -28,7 +28,7 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 	
 	
 	// ***
-	public function __construct($moduleName, $addedArgs){
+	public function __construct($moduleName, Array $addedArgs = null){
 		parent::__construct($moduleName, $addedArgs);
 		
 		$sizeUnit = strtoupper(substr(ini_get('post_max_size'), -1));
