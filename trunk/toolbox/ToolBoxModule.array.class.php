@@ -22,7 +22,7 @@ require_once 'ToolBoxModule.absclass.php';
 class ToolBoxModuleArray extends ToolBoxModule {
 
 	// ***
-	public function __construct($moduleName, $addedArgs){
+	public function __construct($moduleName, Array $addedArgs = null){
 		parent::__construct($moduleName, $addedArgs);
 	}
 	// ***

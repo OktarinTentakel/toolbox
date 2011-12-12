@@ -22,7 +22,7 @@ class ToolBoxModuleStorage extends ToolBoxModule {
 	public static $SINGLETON_CLASSES = array(self::SINGLETON_SQLITECONNECTION, self::SINGLETON_SOLRLUKEHELPER);
 
 	// ***
-	public function __construct($moduleName, $addedArgs){
+	public function __construct($moduleName, Array $addedArgs = null){
 		parent::__construct($moduleName, $addedArgs);
 	}
 	// ***
@@ -302,6 +302,8 @@ class SolrLukeHelper extends ToolBoxModuleSingleton {
 	
 	
 	protected function __construct(Array $args = null){
+		parent::__construct($args);
+		
 		if( isset($args[self::SOLR_ADMIN_URL]) ){
 			$this->solrAdminUrl = ''.$args[self::SOLR_ADMIN_URL];
 		} else {

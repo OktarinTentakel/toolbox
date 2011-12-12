@@ -38,7 +38,7 @@ class ToolBoxModuleRouting extends ToolBoxModule {
 	
 	
 	// ***
-	public function __construct($moduleName, $addedArgs){
+	public function __construct($moduleName, Array $addedArgs = null){
 		parent::__construct($moduleName, $addedArgs);
 	}
 	// ***
@@ -120,8 +120,8 @@ class Router extends ToolBoxModuleSingleton {
 	private $rule404 = null;
 	
 	
-	protected function __construct(){
-		parent::__construct();
+	protected function __construct(Array $args = null){
+		parent::__construct($args);
 		
 		$this->currentRoute =  
 			urldecode(
