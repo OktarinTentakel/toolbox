@@ -63,6 +63,7 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 			isset($_FILES[$filedataName]['tmp_name'])
 			&& (strlen($_FILES[$filedataName]['tmp_name']) > 0)  
 			&& ($_FILES[$filedataName]['size'] > 0) 
+			&& ($_FILES[$filedataName]['error'] == UPLOAD_ERR_OK)
 		);
 	}
 	
