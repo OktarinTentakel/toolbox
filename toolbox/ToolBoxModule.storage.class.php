@@ -84,25 +84,15 @@ class SqliteConnection extends ToolBoxModuleSingleton {
 	//--|GETTER----------
 	
 	/**
-	 * Returns the last created primary key.
+	 * Returns the last created primary key for an open connection.
+	 * If no connection exists or an error while retrieving the id occurrs null is returned.
+	 * It makes no sense whatsoever to return this value without an open connection, since the value
+	 * is always connection-based.
 	 * 
-	 * @return uint the last created primary key
+	 * @return uint|null the last created primary key
 	 */
-	public function getLastCreatedId(){
-		$atomOp = false;
-		
-		if( !$this->isOpen ){
-			$this->open();
-			$atomOp = true;
-		}
-		
-		$res = array_shift($this->db->query('SELECT last_insert_rowid() as lastid;')->fetchArray(SQLITE3_ASSOC));
-		
-		if( $atomOp ){
-			$this->close();
-		}
-		
-		return $res;
+	public function getLastCreatedId(){		
+		return $this->isOpen ? array_shift($this->db->query('SELECT last_insert_rowid() as lastid;')->fetchArray(SQLITE3_ASSOC)) : null;
 	}
 	
 	
