@@ -34,9 +34,10 @@ class ToolBoxModuleInclusion extends ToolBoxModule {
 	 * Does not check for anything, does a raw include, grabs the output buffer and returns the content.
 	 *
 	 * @param String $include the include to grab, all include paths are viable
+	 * @param * $context a parameter to hold a context for the include, which will be usable in the included code
 	 * @return String the contents of the include
 	 */
-	function getIncludeContents($include) {
+	function getIncludeContents($include, $context = null) {
 		ob_start();
 		if( @include $include ){
 			$contents = ob_get_contents();
