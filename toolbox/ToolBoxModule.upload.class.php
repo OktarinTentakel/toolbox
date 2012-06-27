@@ -75,7 +75,7 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 	 * 
 	 * @param String $destinationPath the local directory to move the uploaded file to
 	 * @param String $filedataName the filedata name of the uploaded file
-	 * @param Array $whitelist an array of strings containing allowed file endings
+	 * @param Array $whitelist an array of lowercase strings containing allowed file endings
 	 * @param uint $maxFileSizeMegabytes maximum allowed megabytes for the uploaded file
 	 * @param Closure $nameCreationCallback a function to adapt the filename according to a certain algorithm, this function takes the old name as a parameter
 	 * @param Boolean $sanitizeFileName defines if the filename should be roughly sanitized be removing incompatible characters and transforming others
@@ -125,7 +125,7 @@ class ToolBoxModuleUpload extends ToolBoxModule {
 
 		// whitelisting
 		$pathInfo = pathinfo($_FILES[$filedataName]['name']);
-		if( !in_array($pathInfo['extension'], $whitelist) ){
+		if( !in_array(strtolower($pathInfo['extension']), $whitelist) ){
 			throw new Exception('invalid file extension');
 		}
 	
