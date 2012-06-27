@@ -37,15 +37,16 @@ class ToolBoxModuleInclusion extends ToolBoxModule {
 	 * @return String the contents of the include
 	 */
 	function getIncludeContents($include) {
-		if( is_file($include) ){
-			ob_start();
-			include $include;
+		ob_start();
+		if( @include $include ){
 			$contents = ob_get_contents();
 			ob_end_clean();
+			
 			return $contents;
 		} else {
 			$this->throwModuleException(__FUNCTION__.': io-error, inclusion cannot be located');
 		}
+		ob_end_clean();
 	}
 
 }
