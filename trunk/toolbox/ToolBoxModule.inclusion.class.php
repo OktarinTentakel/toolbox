@@ -39,7 +39,7 @@ class ToolBoxModuleInclusion extends ToolBoxModule {
 	 */
 	function getIncludeContents($include, $context = null) {
 		ob_start();
-		if( @include $include ){
+		if( include $include ){
 			$contents = ob_get_contents();
 			ob_end_clean();
 			
