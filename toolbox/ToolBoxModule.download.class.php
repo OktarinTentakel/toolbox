@@ -52,6 +52,27 @@ class ToolBoxModuleDownload extends ToolBoxModule {
 			$this->throwModuleException(__FUNCTION__.': io-error, file not found');
 		}
 	}
+	
+	
+	
+	/**
+	* Tries to deliver a file from an URL, by setting appropriate headers and redirecting.
+	*
+	* @param String $url a url, including the filename itself, that should be delivered as a download
+	* @param String $mimeTypeOverwrite a valid mimetype to manually set instead of an application-based auto-value
+	*/
+	public function requestRemoteFile($url, $mimeTypeOverwrite = null){
+		$urlParts = parse_url($url);
+		$pathInfo = pathinfo($urlParts['path']);
+	
+		if( is_null($mimeTypeOverwrite) ){
+			header('Content-type: application/'.$pathInfo['extension']);
+		} else {
+			header('Content-type: '.$mimeTypeOverwrite);
+		}
+		header('Content-Disposition: attachment; filename="'.$pathInfo['basename'].'"');
+		header('Location: '.$url);
+	}
 
 }
 
